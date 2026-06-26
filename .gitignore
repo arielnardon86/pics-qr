@@ -33,9 +33,17 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 
+# uploads (persistidos en disco de Render en producción)
+/public/uploads/
+
+# SQLite dev database
+/prisma/prisma/
+
 # vercel
 .vercel
 
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+/app/generated/prisma

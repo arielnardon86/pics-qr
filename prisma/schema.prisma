@@ -1,0 +1,49 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Admin {
+  id                 String    @id @default(cuid())
+  email              String    @unique
+  password           String
+  name               String
+  events             Event[]
+  googleAccessToken  String?
+  googleRefreshToken String?
+  googleTokenExpiry  DateTime?
+  createdAt          DateTime  @default(now())
+}
+
+model Event {
+  id                String   @id @default(cuid())
+  name              String
+  description       String?
+  date              DateTime
+  code              String   @unique
+  adminId           String
+  admin             Admin    @relation(fields: [adminId], references: [id])
+  photos            Photo[]
+  slideshowInterval Int      @default(5)
+  isActive          Boolean  @default(true)
+  driveFolderId     String?
+  driveFolderUrl    String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model Photo {
+  id              String   @id @default(cuid())
+  eventId         String
+  event           Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  filename        String
+  path            String
+  uploadedBy      String?
+  driveFileId     String?
+  driveFileUrl    String?
+  createdAt       DateTime @default(now())
+}

@@ -1,26 +1,112 @@
 @import "tailwindcss";
 
+* {
+  box-sizing: border-box;
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --gold-light:   #F5D87A;
+  --gold-mid:     #C9A132;
+  --gold-dark:    #7A5C10;
+  --gold-shine:   #FFF3B0;
+  --black:        #080808;
+  --black-card:   #111111;
+  --black-border: #2B2210;
+  --cream:        #F5EDD8;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--black);
+  color: var(--cream);
+  font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
+
+/* ── Metallic gold text ── */
+.text-gold {
+  background: linear-gradient(
+    180deg,
+    var(--gold-shine) 0%,
+    var(--gold-light) 30%,
+    var(--gold-mid)   60%,
+    var(--gold-dark)  100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Script display font */
+.font-script {
+  font-family: 'Great Vibes', cursive;
+}
+
+/* Elegant serif headings */
+.font-serif-display {
+  font-family: 'Playfair Display', serif;
+}
+
+/* Gold border */
+.border-gold {
+  border-color: var(--gold-mid);
+}
+
+/* Gold button */
+.btn-gold {
+  background: linear-gradient(135deg, #C9A132 0%, #F5D87A 45%, #C9A132 70%, #7A5C10 100%);
+  color: #080808;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  transition: filter 0.2s, transform 0.15s;
+}
+.btn-gold:hover {
+  filter: brightness(1.12);
+  transform: translateY(-1px);
+}
+.btn-gold:disabled {
+  filter: grayscale(0.6) brightness(0.7);
+  transform: none;
+  cursor: not-allowed;
+}
+
+/* Card dark */
+.card-dark {
+  background-color: var(--black-card);
+  border: 1px solid var(--black-border);
+  border-radius: 1.25rem;
+}
+
+/* Gold divider */
+.divider-gold {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold-mid), transparent);
+}
+
+/* Subtle gold glow */
+.glow-gold {
+  box-shadow: 0 0 30px rgba(201, 161, 50, 0.15), 0 0 60px rgba(201, 161, 50, 0.05);
+}
+
+/* Input dark style */
+.input-dark {
+  background-color: #0f0f0f;
+  border: 1px solid #2B2210;
+  color: var(--cream);
+  border-radius: 0.75rem;
+  padding: 0.75rem 1rem;
+  width: 100%;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.input-dark::placeholder {
+  color: #5a4f3a;
+}
+.input-dark:focus {
+  border-color: var(--gold-mid);
+  box-shadow: 0 0 0 3px rgba(201, 161, 50, 0.12);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #0a0a0a; }
+::-webkit-scrollbar-thumb { background: var(--gold-dark); border-radius: 3px; }

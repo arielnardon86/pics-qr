@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: pics-qr
+    env: node
+    plan: starter          # free plan no tiene WebSockets estables; fotos van a Drive, no se necesita disco
+    buildCommand: npm ci && npm run build
+    startCommand: npx prisma migrate deploy && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false        # Pegar la connection string de Clever Cloud PostgreSQL
+      - key: JWT_SECRET
+        generateValue: true
+      - key: NEXT_PUBLIC_BASE_URL
+        sync: false        # Ej: https://pics-qr.onrender.com
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: GOOGLE_REDIRECT_URI
+        sync: false        # Ej: https://pics-qr.onrender.com/api/auth/google/callback
+      - key: NEXT_TELEMETRY_DISABLED
+        value: "1"
+
