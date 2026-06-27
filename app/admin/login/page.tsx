@@ -102,9 +102,6 @@ export default function LoginPage() {
           </form>
         </div>
 
-        <p className="text-center text-[#3a3020] text-xs tracking-wider">
-          admin@picsqr.com · admin123
-        </p>
       </div>
     </div>
   )
