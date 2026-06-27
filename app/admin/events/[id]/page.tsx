@@ -1,9 +1,10 @@
 'use client'
 
 import { useEffect, useState, use } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
+import { Suspense } from 'react'
 
 interface Photo {
   id: string; path: string; filename: string; uploadedBy: string | null; createdAt: string; driveFileId: string | null; driveFileUrl: string | null
@@ -12,15 +13,18 @@ interface Event {
   id: string; name: string; description: string | null; date: string; code: string
   isActive: boolean; slideshowInterval: number; photos: Photo[]
   driveFolderId: string | null; driveFolderUrl: string | null
+  googleAccessToken: string | null
   _count: { photos: number }
 }
+interface Admin { id: string; email: string; name: string; isSuperAdmin: boolean }
 interface QRData { qr: string; url: string; code: string }
 interface GoogleStatus { connected: boolean; email?: string }
 
-export default function EventPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params)
+function EventPageContent({ id }: { id: string }) {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [event, setEvent] = useState<Event | null>(null)
+  const [admin, setAdmin] = useState<Admin | null>(null)
   const [qrData, setQrData] = useState<QRData | null>(null)
   const [googleStatus, setGoogleStatus] = useState<GoogleStatus>({ connected: false })
   const [loading, setLoading] = useState(true)
@@ -32,15 +36,16 @@ export default function EventPage({ params }: { params: Promise<{ id: string }> 
 
   function showToast(msg: string, type: 'ok' | 'err' = 'ok') {
     setToast({ msg, type })
-    setTimeout(() => setToast(null), 4000)
+    setTimeout(() => setToast(null), 4500)
   }
 
   useEffect(() => {
     async function load() {
-      const [eventRes, qrRes, googleRes] = await Promise.all([
+      const [eventRes, qrRes, meRes, googleRes] = await Promise.all([
         fetch(`/api/events/${id}`),
         fetch(`/api/events/${id}/qr`),
-        fetch('/api/auth/google/status'),
+        fetch('/api/auth/me'),
+        fetch(`/api/auth/google/status?eventId=${id}`),
       ])
       if (eventRes.status === 401) { router.push('/admin/login'); return }
       if (!eventRes.ok) { router.push('/admin/dashboard'); return }
@@ -48,11 +53,27 @@ export default function EventPage({ params }: { params: Promise<{ id: string }> 
       setEvent(eventData.event)
       setSlideInterval(eventData.event.slideshowInterval)
       if (qrRes.ok) setQrData(await qrRes.json())
+      if (meRes.ok) setAdmin((await meRes.json()).admin)
       if (googleRes.ok) setGoogleStatus(await googleRes.json())
       setLoading(false)
     }
     load()
   }, [id, router])
+
+  useEffect(() => {
+    if (searchParams.get('google_ok')) {
+      showToast('Google Drive conectado correctamente ✓')
+      window.history.replaceState({}, '', `/admin/events/${id}`)
+      // Refresh google status
+      fetch(`/api/auth/google/status?eventId=${id}`)
+        .then(r => r.ok ? r.json() : null)
+        .then(data => { if (data) setGoogleStatus(data) })
+    }
+    if (searchParams.get('google_error')) {
+      showToast(decodeURIComponent(searchParams.get('google_error')!), 'err')
+      window.history.replaceState({}, '', `/admin/events/${id}`)
+    }
+  }, [searchParams, id])
 
   async function saveInterval() {
     setSaving(true)
@@ -65,7 +86,7 @@ export default function EventPage({ params }: { params: Promise<{ id: string }> 
   }
 
   async function toggleActive() {
-    if (!event) return
+    if (!event || !admin?.isSuperAdmin) return
     const res = await fetch(`/api/events/${id}`, {
       method: 'PUT', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ isActive: !event.isActive }),
@@ -93,12 +114,13 @@ export default function EventPage({ params }: { params: Promise<{ id: string }> 
     setDriveLoading(false)
   }
 
-  async function unlinkDrive() {
-    if (!confirm('¿Desvincular la carpeta de Drive? Los invitados no podrán subir fotos hasta que configures una nueva carpeta.')) return
+  async function disconnectDrive() {
+    if (!confirm('¿Desconectar Google Drive? Los invitados no podrán subir fotos hasta que conectes una nueva cuenta.')) return
     const res = await fetch(`/api/events/${id}/drive`, { method: 'DELETE' })
     if (res.ok) {
-      setEvent(e => e ? { ...e, driveFolderId: null, driveFolderUrl: null } : e)
-      showToast('Carpeta de Drive desvinculada')
+      setEvent(e => e ? { ...e, driveFolderId: null, driveFolderUrl: null, googleAccessToken: null } : e)
+      setGoogleStatus({ connected: false })
+      showToast('Google Drive desvinculado')
     }
   }
 
@@ -111,9 +133,10 @@ export default function EventPage({ params }: { params: Promise<{ id: string }> 
   }
   if (!event) return null
 
+  const isSuperAdmin = admin?.isSuperAdmin
+
   return (
     <div className="min-h-screen bg-[#080808]">
-      {/* Toast */}
       {toast && (
         <div className={`fixed top-4 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-xl text-sm font-medium tracking-wide border ${
           toast.type === 'ok'
@@ -124,16 +147,17 @@ export default function EventPage({ params }: { params: Promise<{ id: string }> 
         </div>
       )}
 
-      {/* Header */}
       <header className="border-b border-[#2B2210] bg-[#080808]/95 backdrop-blur-sm sticky top-0 z-20 px-6 py-4">
         <div className="max-w-5xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Link href="/admin/dashboard" className="text-[#C9A132]/50 hover:text-[#C9A132] text-xs tracking-widest uppercase transition-colors">← Dashboard</Link>
             <div className="w-px h-4 bg-[#2B2210]" />
-            <h1 className="text-[#F5D87A] text-sm truncate max-w-[180px] sm:max-w-none" style={{ fontFamily: 'var(--font-playfair)', fontStyle: 'italic' }}>{event.name}</h1>
-            <span className={`hidden sm:inline text-xs font-semibold px-2.5 py-1 rounded-full border tracking-wider uppercase ${
-              event.isActive ? 'bg-[#C9A132]/10 text-[#F5D87A] border-[#C9A132]/30' : 'bg-[#1a1a1a] text-[#5a4f3a] border-[#2B2210]'
-            }`}>{event.isActive ? 'Activo' : 'Inactivo'}</span>
+            <h1 className="text-[#F5D87A] text-sm truncate max-w-[180px] sm:max-w-xs" style={{ fontFamily: 'var(--font-playfair)', fontStyle: 'italic' }}>{event.name}</h1>
+            {isSuperAdmin && (
+              <span className={`hidden sm:inline text-xs font-semibold px-2.5 py-1 rounded-full border tracking-wider uppercase ${
+                event.isActive ? 'bg-[#C9A132]/10 text-[#F5D87A] border-[#C9A132]/30' : 'bg-[#1a1a1a] text-[#5a4f3a] border-[#2B2210]'
+              }`}>{event.isActive ? 'Activo' : 'Inactivo'}</span>
+            )}
           </div>
           <Link href={`/admin/events/${id}/slideshow`} target="_blank" className="btn-gold px-4 py-2 rounded-lg text-xs tracking-widest uppercase">Slideshow</Link>
         </div>
@@ -189,26 +213,30 @@ export default function EventPage({ params }: { params: Promise<{ id: string }> 
                 {saving ? 'Guardando...' : 'Guardar'}
               </button>
             </div>
-            <div className="divider-gold opacity-30" />
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs text-[#C9A132]/60 tracking-widest uppercase">Recepción de fotos</p>
-                <p className="text-[#8a7a5a] text-xs mt-0.5">
-                  {!event.driveFolderId
-                    ? 'Requiere Drive configurado'
-                    : event.isActive
-                      ? 'Los invitados pueden subir fotos'
-                      : 'No se aceptan fotos nuevas'}
-                </p>
-              </div>
-              <button
-                onClick={toggleActive}
-                disabled={!event.driveFolderId}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors disabled:opacity-40 ${event.isActive ? 'bg-[#C9A132]' : 'bg-[#2B2210]'}`}
-              >
-                <span className={`inline-block h-4 w-4 rounded-full bg-[#080808] transition-transform ${event.isActive ? 'translate-x-6' : 'translate-x-1'}`} />
-              </button>
-            </div>
+            {isSuperAdmin && (
+              <>
+                <div className="divider-gold opacity-30" />
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs text-[#C9A132]/60 tracking-widest uppercase">Recepción de fotos</p>
+                    <p className="text-[#8a7a5a] text-xs mt-0.5">
+                      {!event.driveFolderId
+                        ? 'Requiere Drive configurado'
+                        : event.isActive
+                          ? 'Los invitados pueden subir fotos'
+                          : 'No se aceptan fotos nuevas'}
+                    </p>
+                  </div>
+                  <button
+                    onClick={toggleActive}
+                    disabled={!event.driveFolderId}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors disabled:opacity-40 ${event.isActive ? 'bg-[#C9A132]' : 'bg-[#2B2210]'}`}
+                  >
+                    <span className={`inline-block h-4 w-4 rounded-full bg-[#080808] transition-transform ${event.isActive ? 'translate-x-6' : 'translate-x-1'}`} />
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
 
@@ -216,35 +244,35 @@ export default function EventPage({ params }: { params: Promise<{ id: string }> 
         <div className="card-dark p-6 space-y-5">
           <div className="flex items-center justify-between">
             <h2 className="text-[#F5D87A] text-xs tracking-[0.25em] uppercase" style={{ fontFamily: 'var(--font-playfair)' }}>
-              Google Drive <span className="text-[#C9A132]/40 normal-case font-normal">— requerido</span>
+              Google Drive <span className="text-[#C9A132]/40 normal-case font-normal">— requerido para recibir fotos</span>
             </h2>
             {event.driveFolderUrl && (
-              <a
-                href={event.driveFolderUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-xs text-blue-400 hover:text-blue-300 tracking-wide transition-colors"
-              >
+              <a href={event.driveFolderUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-400 hover:text-blue-300 tracking-wide transition-colors">
                 Abrir en Drive ↗
               </a>
             )}
           </div>
 
           {!googleStatus.connected ? (
+            /* Step 1: No Google account linked to this event */
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 py-2">
               <div>
-                <p className="text-[#8a7a5a] text-sm">Tu cuenta de Google no está conectada.</p>
-                <p className="text-[#5a4f3a] text-xs mt-0.5">Conectala desde el Dashboard para habilitar la subida de fotos.</p>
+                <p className="text-[#F5EDD8] text-sm">Conectá una cuenta de Google Drive para este evento.</p>
+                <p className="text-[#5a4f3a] text-xs mt-1">Cada evento puede tener su propia cuenta de Google Drive.</p>
               </div>
-              <Link href="/admin/dashboard" className="text-xs border border-[#2B2210] hover:border-[#C9A132]/40 text-[#C9A132] px-4 py-2 rounded-lg tracking-widest uppercase transition-all whitespace-nowrap">
-                Ir al Dashboard
-              </Link>
+              <a
+                href={`/api/auth/google?eventId=${id}`}
+                className="btn-gold px-5 py-2 rounded-lg text-xs tracking-widest uppercase whitespace-nowrap"
+              >
+                Conectar Google Drive
+              </a>
             </div>
           ) : !event.driveFolderId ? (
+            /* Step 2: Google connected but no folder yet */
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 py-2">
               <div>
                 <p className="text-[#F5EDD8] text-sm">Cuenta conectada: <span className="text-[#C9A132]">{googleStatus.email}</span></p>
-                <p className="text-[#8a7a5a] text-xs mt-0.5">Las fotos se guardan directo en Drive. Creá la carpeta del evento para empezar.</p>
+                <p className="text-[#8a7a5a] text-xs mt-1">Las fotos se guardarán directo en Drive. Creá la carpeta del evento para empezar.</p>
               </div>
               <button
                 onClick={createDriveFolder}
@@ -255,25 +283,31 @@ export default function EventPage({ params }: { params: Promise<{ id: string }> 
               </button>
             </div>
           ) : (
+            /* Step 3: Everything configured */
             <div className="space-y-4">
               <div className="flex items-center gap-3 p-3 bg-[#0a0a0a] rounded-xl border border-[#C9A132]/20">
                 <div className="w-8 h-8 rounded-lg bg-[#C9A132]/10 border border-[#C9A132]/30 flex items-center justify-center text-sm">📁</div>
                 <div className="flex-1 min-w-0">
                   <p className="text-[#F5D87A] text-sm font-medium truncate" style={{ fontFamily: 'var(--font-playfair)' }}>{event.name}</p>
-                  <p className="text-[#5a4f3a] text-xs mt-0.5">{event._count.photos} foto{event._count.photos !== 1 ? 's' : ''} · todas guardadas en Drive</p>
+                  <p className="text-[#5a4f3a] text-xs mt-0.5">{googleStatus.email} · {event._count.photos} foto{event._count.photos !== 1 ? 's' : ''} en Drive</p>
                 </div>
                 <a href={event.driveFolderUrl!} target="_blank" rel="noopener noreferrer"
                    className="text-xs text-blue-400 hover:text-blue-300 border border-blue-900/30 px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap">
                   Ver en Drive
                 </a>
               </div>
-
-              <div className="flex justify-end">
+              <div className="flex gap-2 justify-end">
+                <a
+                  href={`/api/auth/google?eventId=${id}`}
+                  className="border border-[#2B2210] hover:border-[#C9A132]/40 text-[#8a7a5a] hover:text-[#C9A132] px-4 py-2 rounded-lg text-xs tracking-widest uppercase transition-all"
+                >
+                  Cambiar cuenta
+                </a>
                 <button
-                  onClick={unlinkDrive}
+                  onClick={disconnectDrive}
                   className="border border-[#2B2210] hover:border-red-900/40 text-[#5a4f3a] hover:text-red-500/60 px-4 py-2 rounded-lg text-xs tracking-widest uppercase transition-all"
                 >
-                  Cambiar carpeta
+                  Desconectar
                 </button>
               </div>
             </div>
@@ -287,12 +321,7 @@ export default function EventPage({ params }: { params: Promise<{ id: string }> 
               Galería · {event.photos.length} foto{event.photos.length !== 1 ? 's' : ''}
             </h2>
             {event.driveFolderUrl && event.photos.length > 0 && (
-              <a
-                href={event.driveFolderUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-xs text-blue-400 hover:text-blue-300 tracking-wide transition-colors"
-              >
+              <a href={event.driveFolderUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-400 hover:text-blue-300 tracking-wide transition-colors">
                 Descargar desde Drive ↗
               </a>
             )}
@@ -335,5 +364,14 @@ export default function EventPage({ params }: { params: Promise<{ id: string }> 
         </div>
       </main>
     </div>
+  )
+}
+
+export default function EventPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params)
+  return (
+    <Suspense>
+      <EventPageContent id={id} />
+    </Suspense>
   )
 }

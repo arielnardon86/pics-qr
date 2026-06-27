@@ -1,15 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { getAuthAdmin } from '@/lib/auth'
+import { getAuthAdminFull } from '@/lib/auth'
 import { generateEventCode } from '@/lib/utils'
 
 export async function GET() {
-  const auth = await getAuthAdmin()
-  if (!auth) return NextResponse.json({ error: 'No autenticado' }, { status: 401 })
+  const admin = await getAuthAdminFull()
+  if (!admin) return NextResponse.json({ error: 'No autenticado' }, { status: 401 })
 
   const events = await prisma.event.findMany({
-    where: { adminId: auth.id },
-    include: { _count: { select: { photos: true } } },
+    where: admin.isSuperAdmin
+      ? {}
+      : { clientId: admin.id },
+    include: {
+      _count: { select: { photos: true } },
+      client: { select: { id: true, name: true, email: true } },
+    },
     orderBy: { createdAt: 'desc' },
   })
 
@@ -17,17 +22,17 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const auth = await getAuthAdmin()
-  if (!auth) return NextResponse.json({ error: 'No autenticado' }, { status: 401 })
+  const admin = await getAuthAdminFull()
+  if (!admin) return NextResponse.json({ error: 'No autenticado' }, { status: 401 })
+  if (!admin.isSuperAdmin) return NextResponse.json({ error: 'Sin permisos para crear eventos' }, { status: 403 })
 
   try {
-    const { name, description, date, slideshowInterval } = await req.json()
+    const { name, description, date, slideshowInterval, clientId } = await req.json()
 
     if (!name || !date) {
       return NextResponse.json({ error: 'Nombre y fecha requeridos' }, { status: 400 })
     }
 
-    // Generate unique code
     let code = generateEventCode()
     let attempts = 0
     while (attempts < 10) {
@@ -43,8 +48,9 @@ export async function POST(req: NextRequest) {
         description,
         date: new Date(date),
         code,
-        adminId: auth.id,
+        adminId: admin.id,
         slideshowInterval: slideshowInterval || 5,
+        clientId: clientId || null,
       },
     })
 

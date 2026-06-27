@@ -19,14 +19,11 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
 
-  const event = await prisma.event.findUnique({
-    where: { id },
-    include: { admin: true },
-  })
+  const event = await prisma.event.findUnique({ where: { id } })
   if (!event) return NextResponse.json({ error: 'Evento no encontrado' }, { status: 404 })
   if (!event.isActive) return NextResponse.json({ error: 'El evento no está activo' }, { status: 403 })
-  if (!event.driveFolderId) return NextResponse.json({ error: 'Este evento no tiene Google Drive configurado. El organizador debe configurarlo antes de recibir fotos.' }, { status: 400 })
-  if (!event.admin.googleAccessToken) return NextResponse.json({ error: 'Cuenta de Google no conectada' }, { status: 400 })
+  if (!event.driveFolderId) return NextResponse.json({ error: 'Este evento no tiene Google Drive configurado.' }, { status: 400 })
+  if (!event.googleAccessToken) return NextResponse.json({ error: 'Cuenta de Google no conectada para este evento.' }, { status: 400 })
 
   try {
     const formData = await req.formData()
@@ -38,14 +35,14 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     }
 
     let freshTokens = await refreshTokenIfNeeded({
-      access_token: event.admin.googleAccessToken,
-      refresh_token: event.admin.googleRefreshToken,
-      expiry_date: event.admin.googleTokenExpiry?.getTime(),
+      access_token: event.googleAccessToken,
+      refresh_token: event.googleRefreshToken,
+      expiry_date: event.googleTokenExpiry?.getTime(),
     })
 
-    if (freshTokens.access_token !== event.admin.googleAccessToken) {
-      await prisma.admin.update({
-        where: { id: event.admin.id },
+    if (freshTokens.access_token !== event.googleAccessToken) {
+      await prisma.event.update({
+        where: { id },
         data: {
           googleAccessToken: freshTokens.access_token,
           googleRefreshToken: freshTokens.refresh_token ?? undefined,

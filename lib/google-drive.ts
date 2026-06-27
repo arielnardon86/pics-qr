@@ -9,11 +9,12 @@ export function getOAuthClient() {
   )
 }
 
-export function getAuthUrl() {
+export function getAuthUrl(eventId: string) {
   const client = getOAuthClient()
   return client.generateAuthUrl({
     access_type: 'offline',
     prompt: 'consent',
+    state: eventId,
     scope: [
       'https://www.googleapis.com/auth/drive.file',
       'https://www.googleapis.com/auth/userinfo.email',

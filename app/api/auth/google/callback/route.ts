@@ -9,10 +9,11 @@ export async function GET(req: NextRequest) {
 
   const { searchParams } = new URL(req.url)
   const code = searchParams.get('code')
+  const state = searchParams.get('state') // eventId
   const error = searchParams.get('error')
 
-  if (error || !code) {
-    const reason = error === 'access_denied' ? 'Acceso denegado por el usuario' : 'Error en la autenticación'
+  if (error || !code || !state) {
+    const reason = error === 'access_denied' ? 'Acceso denegado' : 'Error en la autenticación'
     return NextResponse.redirect(
       new URL(`/admin/dashboard?google_error=${encodeURIComponent(reason)}`, req.url)
     )
@@ -22,8 +23,8 @@ export async function GET(req: NextRequest) {
     const client = getOAuthClient()
     const { tokens } = await client.getToken(code)
 
-    await prisma.admin.update({
-      where: { id: auth.id },
+    await prisma.event.update({
+      where: { id: state },
       data: {
         googleAccessToken: tokens.access_token,
         googleRefreshToken: tokens.refresh_token ?? undefined,
@@ -32,7 +33,7 @@ export async function GET(req: NextRequest) {
     })
 
     return NextResponse.redirect(
-      new URL('/admin/dashboard?google_ok=1', req.url)
+      new URL(`/admin/events/${state}?google_ok=1`, req.url)
     )
   } catch (err) {
     console.error('Google OAuth callback error:', err)

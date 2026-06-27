@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken'
 import bcrypt from 'bcryptjs'
 import { cookies } from 'next/headers'
+import { prisma } from './prisma'
 
 const JWT_SECRET = process.env.JWT_SECRET || 'pics-qr-secret'
 
@@ -29,4 +30,13 @@ export async function getAuthAdmin() {
   const token = cookieStore.get('auth-token')?.value
   if (!token) return null
   return verifyToken(token)
+}
+
+export async function getAuthAdminFull() {
+  const auth = await getAuthAdmin()
+  if (!auth) return null
+  return prisma.admin.findUnique({
+    where: { id: auth.id },
+    select: { id: true, email: true, name: true, isSuperAdmin: true },
+  })
 }

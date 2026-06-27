@@ -2,12 +2,10 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { hashPassword, signToken } from '@/lib/auth'
 
-// This endpoint creates the initial admin account
 export async function POST(req: NextRequest) {
   try {
     const { email, password, name, setupKey } = await req.json()
 
-    // Simple setup key to prevent unauthorized registration
     if (setupKey !== process.env.SETUP_KEY && process.env.SETUP_KEY) {
       return NextResponse.json({ error: 'Clave de configuración inválida' }, { status: 403 })
     }
@@ -17,16 +15,20 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'El email ya está registrado' }, { status: 409 })
     }
 
+    // First admin to register becomes super admin
+    const adminCount = await prisma.admin.count()
+    const isSuperAdmin = adminCount === 0
+
     const hashedPassword = await hashPassword(password)
     const admin = await prisma.admin.create({
-      data: { email, password: hashedPassword, name },
+      data: { email, password: hashedPassword, name, isSuperAdmin },
     })
 
     const token = signToken({ id: admin.id, email: admin.email })
 
     const response = NextResponse.json({
       success: true,
-      admin: { id: admin.id, email: admin.email, name: admin.name },
+      admin: { id: admin.id, email: admin.email, name: admin.name, isSuperAdmin: admin.isSuperAdmin },
     })
     response.cookies.set('auth-token', token, {
       httpOnly: true,
