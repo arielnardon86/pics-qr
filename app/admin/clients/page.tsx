@@ -66,7 +66,7 @@ export default function ClientsPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-[#080808] flex items-center justify-center">
-        <p className="font-script text-3xl text-gold" style={{ fontFamily: 'var(--font-great-vibes)' }}>Cargando...</p>
+        <p className="text-3xl text-gold" style={{ fontFamily: 'var(--font-space-grotesk)' }}>Cargando...</p>
       </div>
     )
   }
@@ -75,16 +75,16 @@ export default function ClientsPage() {
     <div className="min-h-screen bg-[#080808]">
       {toast && (
         <div className={`fixed top-4 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-xl text-sm font-medium tracking-wide border ${
-          toast.type === 'ok' ? 'bg-[#C9A132]/10 border-[#C9A132]/40 text-[#F5D87A]' : 'bg-red-900/20 border-red-800/40 text-red-400'
+          toast.type === 'ok' ? 'bg-[#34D399]/10 border-[#34D399]/40 text-white' : 'bg-red-900/20 border-red-800/40 text-red-400'
         }`}>{toast.msg}</div>
       )}
 
-      <header className="border-b border-[#2B2210] bg-[#080808]/95 backdrop-blur-sm sticky top-0 z-20 px-6 py-4">
+      <header className="border-b border-[#1f2937] bg-[#080808]/95 backdrop-blur-sm sticky top-0 z-20 px-6 py-4">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Link href="/admin/dashboard" className="text-[#C9A132]/50 hover:text-[#C9A132] text-xs tracking-widest uppercase transition-colors">← Dashboard</Link>
-            <div className="w-px h-4 bg-[#2B2210]" />
-            <h1 className="text-[#F5D87A] text-sm tracking-[0.2em] uppercase" style={{ fontFamily: 'var(--font-playfair)' }}>Clientes</h1>
+            <Link href="/admin/dashboard" className="text-[#34D399]/50 hover:text-[#34D399] text-xs tracking-widest uppercase transition-colors">← Dashboard</Link>
+            <div className="w-px h-4 bg-[#1f2937]" />
+            <h1 className="text-white text-sm tracking-[0.2em] uppercase" style={{ fontFamily: 'var(--font-space-grotesk)' }}>Clientes</h1>
           </div>
           <button
             onClick={() => { setShowForm(true); setError('') }}
@@ -100,11 +100,11 @@ export default function ClientsPage() {
         {/* Create client form */}
         {showForm && (
           <div className="card-dark p-6 glow-gold">
-            <h2 className="text-[#F5D87A] text-xs tracking-[0.25em] uppercase mb-5" style={{ fontFamily: 'var(--font-playfair)' }}>Nuevo cliente</h2>
+            <h2 className="text-white text-xs tracking-[0.25em] uppercase mb-5" style={{ fontFamily: 'var(--font-space-grotesk)' }}>Nuevo cliente</h2>
             <form onSubmit={createClient} className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-xs text-[#C9A132]/60 mb-1.5 tracking-widest uppercase">Nombre</label>
+                  <label className="block text-xs text-[#34D399]/60 mb-1.5 tracking-widest uppercase">Nombre</label>
                   <input
                     type="text" required value={form.name}
                     onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
@@ -112,7 +112,7 @@ export default function ClientsPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-[#C9A132]/60 mb-1.5 tracking-widest uppercase">Email</label>
+                  <label className="block text-xs text-[#34D399]/60 mb-1.5 tracking-widest uppercase">Email</label>
                   <input
                     type="email" required value={form.email}
                     onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
@@ -120,7 +120,7 @@ export default function ClientsPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-[#C9A132]/60 mb-1.5 tracking-widest uppercase">Contraseña</label>
+                  <label className="block text-xs text-[#34D399]/60 mb-1.5 tracking-widest uppercase">Contraseña</label>
                   <input
                     type="password" required minLength={6} value={form.password}
                     onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
@@ -130,7 +130,7 @@ export default function ClientsPage() {
               </div>
               {error && <p className="text-red-400 text-sm">{error}</p>}
               <div className="flex gap-3 justify-end">
-                <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 text-xs text-[#8a7a5a] hover:text-[#C9A132] tracking-widest uppercase transition-colors">Cancelar</button>
+                <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 text-xs text-[#9ca3af] hover:text-[#34D399] tracking-widest uppercase transition-colors">Cancelar</button>
                 <button type="submit" disabled={creating} className="btn-gold px-6 py-2 rounded-lg text-xs tracking-widest uppercase disabled:opacity-50">
                   {creating ? 'Creando...' : 'Crear cliente'}
                 </button>
@@ -142,21 +142,21 @@ export default function ClientsPage() {
         {/* Clients list */}
         {clients.length === 0 ? (
           <div className="text-center py-24 space-y-3">
-            <p className="font-script text-5xl text-gold opacity-40" style={{ fontFamily: 'var(--font-great-vibes)' }}>Sin clientes</p>
-            <p className="text-[#5a4f3a] text-sm">Creá el primer cliente para empezar a vender el servicio</p>
+            <p className="text-5xl text-gold opacity-40" style={{ fontFamily: 'var(--font-space-grotesk)' }}>Sin clientes</p>
+            <p className="text-[#6b7280] text-sm">Creá el primer cliente para empezar a vender el servicio</p>
           </div>
         ) : (
           <div className="space-y-4">
             {clients.map(client => (
-              <div key={client.id} className="card-dark p-5" style={{ borderColor: '#2B2210' }}>
+              <div key={client.id} className="card-dark p-5" style={{ borderColor: '#1f2937' }}>
                 <div className="flex items-start justify-between">
                   <div>
-                    <p className="text-[#F5D87A] font-semibold" style={{ fontFamily: 'var(--font-playfair)' }}>{client.name}</p>
-                    <p className="text-[#8a7a5a] text-xs mt-0.5">{client.email}</p>
+                    <p className="text-white font-semibold" style={{ fontFamily: 'var(--font-space-grotesk)' }}>{client.name}</p>
+                    <p className="text-[#9ca3af] text-xs mt-0.5">{client.email}</p>
                   </div>
                   <button
                     onClick={() => deleteClient(client.id, client.name)}
-                    className="text-xs text-[#5a4f3a] hover:text-red-500/70 hover:bg-red-900/10 px-3 py-1.5 rounded-lg transition-colors tracking-widest uppercase"
+                    className="text-xs text-[#6b7280] hover:text-red-500/70 hover:bg-red-900/10 px-3 py-1.5 rounded-lg transition-colors tracking-widest uppercase"
                   >
                     Eliminar
                   </button>
@@ -170,7 +170,7 @@ export default function ClientsPage() {
                         <Link
                           key={ev.id}
                           href={`/admin/events/${ev.id}`}
-                          className="text-xs px-3 py-1 rounded-full border border-[#2B2210] hover:border-[#C9A132]/40 text-[#8a7a5a] hover:text-[#C9A132] transition-colors"
+                          className="text-xs px-3 py-1 rounded-full border border-[#1f2937] hover:border-[#34D399]/40 text-[#9ca3af] hover:text-[#34D399] transition-colors"
                         >
                           {ev.name} {ev.isActive ? '·' : '· inactivo'}
                         </Link>
@@ -180,7 +180,7 @@ export default function ClientsPage() {
                 )}
 
                 {client.clientEvents.length === 0 && (
-                  <p className="text-[#3a3020] text-xs mt-2">Sin eventos asignados</p>
+                  <p className="text-[#374151] text-xs mt-2">Sin eventos asignados</p>
                 )}
               </div>
             ))}

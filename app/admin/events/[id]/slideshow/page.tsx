@@ -90,7 +90,7 @@ export default function SlideshowPage({ params }: { params: Promise<{ id: string
   if (loading) {
     return (
       <div className="min-h-screen bg-[#080808] flex items-center justify-center">
-        <p className="font-script text-5xl text-gold" style={{ fontFamily: 'var(--font-great-vibes)' }}>
+        <p className="text-5xl text-gold" style={{ fontFamily: 'var(--font-space-grotesk)' }}>
           Cargando...
         </p>
       </div>
@@ -100,14 +100,14 @@ export default function SlideshowPage({ params }: { params: Promise<{ id: string
   if (photos.length === 0) {
     return (
       <div className="min-h-screen bg-[#080808] flex flex-col items-center justify-center text-center p-8 space-y-6">
-        <p className="font-script text-7xl text-gold" style={{ fontFamily: 'var(--font-great-vibes)' }}>
+        <p className="text-7xl text-gold" style={{ fontFamily: 'var(--font-space-grotesk)' }}>
           {event?.name}
         </p>
         <div className="divider-gold w-48 mx-auto" />
-        <p className="text-[#8a7a5a] text-lg tracking-wide" style={{ fontFamily: 'var(--font-playfair)', fontStyle: 'italic' }}>
+        <p className="text-[#9ca3af] text-lg tracking-wide" style={{ fontFamily: 'var(--font-space-grotesk)', fontStyle: 'italic' }}>
           Esperando las primeras fotos...
         </p>
-        <p className="text-[#5a4f3a] text-sm">Las fotos aparecerán aquí en tiempo real</p>
+        <p className="text-[#6b7280] text-sm">Las fotos aparecerán aquí en tiempo real</p>
       </div>
     )
   }
@@ -136,20 +136,20 @@ export default function SlideshowPage({ params }: { params: Promise<{ id: string
       {/* Top bar */}
       <div className={`absolute top-0 inset-x-0 flex items-center justify-between px-8 py-5 z-10 transition-opacity duration-500 ${showControls ? 'opacity-100' : 'opacity-0'}`}
            style={{ background: 'linear-gradient(to bottom, rgba(8,8,8,0.7), transparent)' }}>
-        <p className="font-script text-3xl text-gold" style={{ fontFamily: 'var(--font-great-vibes)' }}>
+        <p className="text-3xl text-gold" style={{ fontFamily: 'var(--font-space-grotesk)' }}>
           {event?.name}
         </p>
         <div className="flex items-center gap-4">
           {newPhotoFlash && (
-            <span className="border border-[#C9A132]/50 bg-[#C9A132]/10 text-[#F5D87A] text-xs font-bold px-3 py-1.5 rounded-full tracking-widest uppercase animate-pulse">
+            <span className="border border-[#34D399]/50 bg-[#34D399]/10 text-white text-xs font-bold px-3 py-1.5 rounded-full tracking-widest uppercase animate-pulse">
               Nueva foto ✦
             </span>
           )}
-          <span className="text-[#8a7a5a] text-xs tracking-widest" style={{ fontFamily: 'var(--font-playfair)' }}>
+          <span className="text-[#9ca3af] text-xs tracking-widest" style={{ fontFamily: 'var(--font-space-grotesk)' }}>
             {currentIndex + 1} / {photos.length}
           </span>
           {currentPhoto.uploadedBy && (
-            <span className="text-[#C9A132]/70 text-sm" style={{ fontFamily: 'var(--font-playfair)', fontStyle: 'italic' }}>
+            <span className="text-[#34D399]/70 text-sm" style={{ fontFamily: 'var(--font-space-grotesk)', fontStyle: 'italic' }}>
               {currentPhoto.uploadedBy}
             </span>
           )}
@@ -159,13 +159,13 @@ export default function SlideshowPage({ params }: { params: Promise<{ id: string
       {/* Left / Right */}
       <button
         onClick={() => setCurrentIndex(i => (i - 1 + photos.length) % photos.length)}
-        className={`absolute left-4 top-1/2 -translate-y-1/2 text-[#C9A132]/60 hover:text-[#F5D87A] bg-[#080808]/40 hover:bg-[#C9A132]/10 border border-[#2B2210] hover:border-[#C9A132]/40 rounded-full w-12 h-12 flex items-center justify-center text-2xl transition-all z-10 ${showControls ? 'opacity-100' : 'opacity-0'}`}
+        className={`absolute left-4 top-1/2 -translate-y-1/2 text-[#34D399]/60 hover:text-white bg-[#080808]/40 hover:bg-[#34D399]/10 border border-[#1f2937] hover:border-[#34D399]/40 rounded-full w-12 h-12 flex items-center justify-center text-2xl transition-all z-10 ${showControls ? 'opacity-100' : 'opacity-0'}`}
       >
         ‹
       </button>
       <button
         onClick={() => setCurrentIndex(i => (i + 1) % photos.length)}
-        className={`absolute right-4 top-1/2 -translate-y-1/2 text-[#C9A132]/60 hover:text-[#F5D87A] bg-[#080808]/40 hover:bg-[#C9A132]/10 border border-[#2B2210] hover:border-[#C9A132]/40 rounded-full w-12 h-12 flex items-center justify-center text-2xl transition-all z-10 ${showControls ? 'opacity-100' : 'opacity-0'}`}
+        className={`absolute right-4 top-1/2 -translate-y-1/2 text-[#34D399]/60 hover:text-white bg-[#080808]/40 hover:bg-[#34D399]/10 border border-[#1f2937] hover:border-[#34D399]/40 rounded-full w-12 h-12 flex items-center justify-center text-2xl transition-all z-10 ${showControls ? 'opacity-100' : 'opacity-0'}`}
       >
         ›
       </button>
@@ -175,13 +175,13 @@ export default function SlideshowPage({ params }: { params: Promise<{ id: string
            style={{ background: 'linear-gradient(to top, rgba(8,8,8,0.7), transparent)' }}>
         <button
           onClick={() => setIsPaused(p => !p)}
-          className="border border-[#2B2210] hover:border-[#C9A132]/40 text-[#C9A132]/70 hover:text-[#F5D87A] bg-[#080808]/50 hover:bg-[#C9A132]/10 rounded-full px-5 py-2 text-xs tracking-widest uppercase transition-all"
+          className="border border-[#1f2937] hover:border-[#34D399]/40 text-[#34D399]/70 hover:text-white bg-[#080808]/50 hover:bg-[#34D399]/10 rounded-full px-5 py-2 text-xs tracking-widest uppercase transition-all"
         >
           {isPaused ? '▶ Reanudar' : '⏸ Pausar'}
         </button>
         <button
           onClick={toggleFullscreen}
-          className="border border-[#2B2210] hover:border-[#C9A132]/40 text-[#C9A132]/70 hover:text-[#F5D87A] bg-[#080808]/50 hover:bg-[#C9A132]/10 rounded-full px-5 py-2 text-xs tracking-widest uppercase transition-all"
+          className="border border-[#1f2937] hover:border-[#34D399]/40 text-[#34D399]/70 hover:text-white bg-[#080808]/50 hover:bg-[#34D399]/10 rounded-full px-5 py-2 text-xs tracking-widest uppercase transition-all"
         >
           {isFullscreen ? 'Salir' : 'Pantalla completa'}
         </button>
@@ -189,12 +189,12 @@ export default function SlideshowPage({ params }: { params: Promise<{ id: string
 
       {/* Gold progress bar */}
       {!isPaused && event && (
-        <div className="absolute bottom-0 inset-x-0 h-[2px] bg-[#2B2210] z-20">
+        <div className="absolute bottom-0 inset-x-0 h-[2px] bg-[#1f2937] z-20">
           <div
             key={`${currentIndex}-${event.slideshowInterval}`}
             className="h-full"
             style={{
-              background: 'linear-gradient(90deg, #7A5C10, #C9A132, #F5D87A)',
+              background: 'linear-gradient(90deg, #7A5C10, #34D399, #34D399)',
               animation: `progress ${event.slideshowInterval}s linear`,
             }}
           />

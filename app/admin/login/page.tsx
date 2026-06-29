@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -33,34 +34,30 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-[#080808] flex items-center justify-center p-4 relative overflow-hidden">
       {/* Glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full bg-[#C9A132]/6 blur-[100px] pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full bg-[#34D399]/6 blur-[100px] pointer-events-none" />
 
       <div className="relative z-10 w-full max-w-sm space-y-8">
         {/* Brand */}
-        <div className="text-center space-y-1">
-          <Link href="/">
-            <p className="font-script text-6xl text-gold leading-none"
-               style={{ fontFamily: 'var(--font-great-vibes)' }}>
-              Freedom
+        <div className="text-center space-y-3">
+          <Link href="/" className="flex flex-col items-center gap-2">
+            <Image src="/logo.png" alt="Total Pics" width={64} height={64} className="drop-shadow-[0_0_16px_rgba(52,211,153,0.3)]" />
+            <p className="text-xl font-black tracking-widest uppercase text-white" style={{ fontFamily: 'var(--font-exo2)' }}>
+              TOTAL <span className="text-[#34D399]">PICS</span>
             </p>
           </Link>
-          <p className="text-[#C9A132]/60 text-xs tracking-[0.4em] uppercase"
-             style={{ fontFamily: 'var(--font-playfair)' }}>
-            Fotos
-          </p>
-          <div className="divider-gold mx-auto w-32 mt-3" />
+          <div className="divider-gold mx-auto w-32" />
         </div>
 
         {/* Card */}
         <div className="card-dark p-8 glow-gold space-y-6">
-          <h2 className="text-center text-[#F5D87A] text-lg tracking-[0.2em] uppercase"
-              style={{ fontFamily: 'var(--font-playfair)' }}>
+          <h2 className="text-center text-white text-lg tracking-[0.2em] uppercase"
+              style={{ fontFamily: 'var(--font-space-grotesk)' }}>
             Administrador
           </h2>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-xs text-[#C9A132]/70 mb-1.5 tracking-widest uppercase">
+              <label className="block text-xs text-[#34D399]/70 mb-1.5 tracking-widest uppercase">
                 Email
               </label>
               <input
@@ -73,7 +70,7 @@ export default function LoginPage() {
               />
             </div>
             <div>
-              <label className="block text-xs text-[#C9A132]/70 mb-1.5 tracking-widest uppercase">
+              <label className="block text-xs text-[#34D399]/70 mb-1.5 tracking-widest uppercase">
                 Contraseña
               </label>
               <input

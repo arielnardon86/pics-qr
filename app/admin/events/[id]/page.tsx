@@ -127,7 +127,7 @@ function EventPageContent({ id }: { id: string }) {
   if (loading) {
     return (
       <div className="min-h-screen bg-[#080808] flex items-center justify-center">
-        <p className="font-script text-3xl text-gold" style={{ fontFamily: 'var(--font-great-vibes)' }}>Cargando...</p>
+        <p className="text-3xl text-gold" style={{ fontFamily: 'var(--font-space-grotesk)' }}>Cargando...</p>
       </div>
     )
   }
@@ -140,22 +140,22 @@ function EventPageContent({ id }: { id: string }) {
       {toast && (
         <div className={`fixed top-4 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-xl text-sm font-medium tracking-wide border ${
           toast.type === 'ok'
-            ? 'bg-[#C9A132]/10 border-[#C9A132]/40 text-[#F5D87A]'
+            ? 'bg-[#34D399]/10 border-[#34D399]/40 text-white'
             : 'bg-red-900/20 border-red-800/40 text-red-400'
         }`}>
           {toast.msg}
         </div>
       )}
 
-      <header className="border-b border-[#2B2210] bg-[#080808]/95 backdrop-blur-sm sticky top-0 z-20 px-6 py-4">
+      <header className="border-b border-[#1f2937] bg-[#080808]/95 backdrop-blur-sm sticky top-0 z-20 px-6 py-4">
         <div className="max-w-5xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Link href="/admin/dashboard" className="text-[#C9A132]/50 hover:text-[#C9A132] text-xs tracking-widest uppercase transition-colors">← Dashboard</Link>
-            <div className="w-px h-4 bg-[#2B2210]" />
-            <h1 className="text-[#F5D87A] text-sm truncate max-w-[180px] sm:max-w-xs" style={{ fontFamily: 'var(--font-playfair)', fontStyle: 'italic' }}>{event.name}</h1>
+            <Link href="/admin/dashboard" className="text-[#34D399]/50 hover:text-[#34D399] text-xs tracking-widest uppercase transition-colors">← Dashboard</Link>
+            <div className="w-px h-4 bg-[#1f2937]" />
+            <h1 className="text-white text-sm truncate max-w-[180px] sm:max-w-xs" style={{ fontFamily: 'var(--font-space-grotesk)', fontStyle: 'italic' }}>{event.name}</h1>
             {isSuperAdmin && (
               <span className={`hidden sm:inline text-xs font-semibold px-2.5 py-1 rounded-full border tracking-wider uppercase ${
-                event.isActive ? 'bg-[#C9A132]/10 text-[#F5D87A] border-[#C9A132]/30' : 'bg-[#1a1a1a] text-[#5a4f3a] border-[#2B2210]'
+                event.isActive ? 'bg-[#34D399]/10 text-white border-[#34D399]/30' : 'bg-[#1a1a1a] text-[#6b7280] border-[#1f2937]'
               }`}>{event.isActive ? 'Activo' : 'Inactivo'}</span>
             )}
           </div>
@@ -170,7 +170,7 @@ function EventPageContent({ id }: { id: string }) {
 
           {/* QR Card */}
           <div className="card-dark p-6 glow-gold">
-            <h2 className="text-[#F5D87A] text-xs tracking-[0.25em] uppercase mb-5" style={{ fontFamily: 'var(--font-playfair)' }}>Código QR del evento</h2>
+            <h2 className="text-white text-xs tracking-[0.25em] uppercase mb-5" style={{ fontFamily: 'var(--font-space-grotesk)' }}>Código QR del evento</h2>
             {qrData && (
               <div className="flex flex-col items-center gap-4">
                 <div className="p-3 bg-white rounded-2xl">
@@ -178,14 +178,14 @@ function EventPageContent({ id }: { id: string }) {
                 </div>
                 <div className="text-center">
                   <p className="text-2xl font-mono font-bold text-gold tracking-[0.3em]">{qrData.code}</p>
-                  <p className="text-xs text-[#5a4f3a] mt-1 break-all">{qrData.url}</p>
+                  <p className="text-xs text-[#6b7280] mt-1 break-all">{qrData.url}</p>
                 </div>
                 <div className="divider-gold w-full opacity-30" />
                 <div className="flex gap-2 w-full">
-                  <button onClick={copyLink} className="flex-1 border border-[#2B2210] hover:border-[#C9A132]/50 text-[#C9A132] hover:text-[#F5D87A] py-2 rounded-lg text-xs tracking-widest uppercase transition-all">
+                  <button onClick={copyLink} className="flex-1 border border-[#1f2937] hover:border-[#34D399]/50 text-[#34D399] hover:text-white py-2 rounded-lg text-xs tracking-widest uppercase transition-all">
                     {copying ? '✓ Copiado' : 'Copiar link'}
                   </button>
-                  <a href={qrData.qr} download={`qr-${event.code}.png`} className="flex-1 text-center bg-[#C9A132]/10 hover:bg-[#C9A132]/20 text-[#F5D87A] py-2 rounded-lg text-xs tracking-widest uppercase transition-all">
+                  <a href={qrData.qr} download={`qr-${event.code}.png`} className="flex-1 text-center bg-[#34D399]/10 hover:bg-[#34D399]/20 text-white py-2 rounded-lg text-xs tracking-widest uppercase transition-all">
                     Descargar QR
                   </a>
                 </div>
@@ -195,19 +195,19 @@ function EventPageContent({ id }: { id: string }) {
 
           {/* Settings Card */}
           <div className="card-dark p-6 space-y-5">
-            <h2 className="text-[#F5D87A] text-xs tracking-[0.25em] uppercase" style={{ fontFamily: 'var(--font-playfair)' }}>Configuración</h2>
+            <h2 className="text-white text-xs tracking-[0.25em] uppercase" style={{ fontFamily: 'var(--font-space-grotesk)' }}>Configuración</h2>
             <div>
-              <p className="text-xs text-[#C9A132]/60 tracking-widest uppercase mb-1">Fecha</p>
-              <p className="text-[#F5EDD8] text-sm" style={{ fontFamily: 'var(--font-playfair)', fontStyle: 'italic' }}>
+              <p className="text-xs text-[#34D399]/60 tracking-widest uppercase mb-1">Fecha</p>
+              <p className="text-[#f1f5f9] text-sm" style={{ fontFamily: 'var(--font-space-grotesk)', fontStyle: 'italic' }}>
                 {new Date(event.date).toLocaleDateString('es-AR', { day: 'numeric', month: 'long', year: 'numeric' })}
               </p>
             </div>
             <div className="divider-gold opacity-30" />
             <div>
-              <p className="text-xs text-[#C9A132]/60 tracking-widest uppercase mb-2">Intervalo slideshow</p>
+              <p className="text-xs text-[#34D399]/60 tracking-widest uppercase mb-2">Intervalo slideshow</p>
               <div className="flex items-center gap-3">
-                <input type="range" min="2" max="30" value={slideInterval} onChange={e => setSlideInterval(Number(e.target.value))} className="flex-1 accent-[#C9A132]" />
-                <span className="text-[#F5D87A] font-semibold w-10 text-right text-sm" style={{ fontFamily: 'var(--font-playfair)' }}>{slideInterval}s</span>
+                <input type="range" min="2" max="30" value={slideInterval} onChange={e => setSlideInterval(Number(e.target.value))} className="flex-1 accent-[#34D399]" />
+                <span className="text-white font-semibold w-10 text-right text-sm" style={{ fontFamily: 'var(--font-space-grotesk)' }}>{slideInterval}s</span>
               </div>
               <button onClick={saveInterval} disabled={saving || slideInterval === event.slideshowInterval} className="mt-2 text-xs btn-gold px-4 py-1.5 rounded-lg disabled:opacity-40">
                 {saving ? 'Guardando...' : 'Guardar'}
@@ -218,8 +218,8 @@ function EventPageContent({ id }: { id: string }) {
                 <div className="divider-gold opacity-30" />
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-xs text-[#C9A132]/60 tracking-widest uppercase">Recepción de fotos</p>
-                    <p className="text-[#8a7a5a] text-xs mt-0.5">
+                    <p className="text-xs text-[#34D399]/60 tracking-widest uppercase">Recepción de fotos</p>
+                    <p className="text-[#9ca3af] text-xs mt-0.5">
                       {!event.driveFolderId
                         ? 'Requiere Drive configurado'
                         : event.isActive
@@ -230,7 +230,7 @@ function EventPageContent({ id }: { id: string }) {
                   <button
                     onClick={toggleActive}
                     disabled={!event.driveFolderId}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors disabled:opacity-40 ${event.isActive ? 'bg-[#C9A132]' : 'bg-[#2B2210]'}`}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors disabled:opacity-40 ${event.isActive ? 'bg-[#34D399]' : 'bg-[#1f2937]'}`}
                   >
                     <span className={`inline-block h-4 w-4 rounded-full bg-[#080808] transition-transform ${event.isActive ? 'translate-x-6' : 'translate-x-1'}`} />
                   </button>
@@ -243,8 +243,8 @@ function EventPageContent({ id }: { id: string }) {
         {/* Google Drive Card */}
         <div className="card-dark p-6 space-y-5">
           <div className="flex items-center justify-between">
-            <h2 className="text-[#F5D87A] text-xs tracking-[0.25em] uppercase" style={{ fontFamily: 'var(--font-playfair)' }}>
-              Google Drive <span className="text-[#C9A132]/40 normal-case font-normal">— requerido para recibir fotos</span>
+            <h2 className="text-white text-xs tracking-[0.25em] uppercase" style={{ fontFamily: 'var(--font-space-grotesk)' }}>
+              Google Drive <span className="text-[#34D399]/40 normal-case font-normal">— requerido para recibir fotos</span>
             </h2>
             {event.driveFolderUrl && (
               <a href={event.driveFolderUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-400 hover:text-blue-300 tracking-wide transition-colors">
@@ -257,8 +257,8 @@ function EventPageContent({ id }: { id: string }) {
             /* Step 1: No Google account linked to this event */
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 py-2">
               <div>
-                <p className="text-[#F5EDD8] text-sm">Conectá una cuenta de Google Drive para este evento.</p>
-                <p className="text-[#5a4f3a] text-xs mt-1">Cada evento puede tener su propia cuenta de Google Drive.</p>
+                <p className="text-[#f1f5f9] text-sm">Conectá una cuenta de Google Drive para este evento.</p>
+                <p className="text-[#6b7280] text-xs mt-1">Cada evento puede tener su propia cuenta de Google Drive.</p>
               </div>
               <a
                 href={`/api/auth/google?eventId=${id}`}
@@ -271,8 +271,8 @@ function EventPageContent({ id }: { id: string }) {
             /* Step 2: Google connected but no folder yet */
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 py-2">
               <div>
-                <p className="text-[#F5EDD8] text-sm">Cuenta conectada: <span className="text-[#C9A132]">{googleStatus.email}</span></p>
-                <p className="text-[#8a7a5a] text-xs mt-1">Las fotos se guardarán directo en Drive. Creá la carpeta del evento para empezar.</p>
+                <p className="text-[#f1f5f9] text-sm">Cuenta conectada: <span className="text-[#34D399]">{googleStatus.email}</span></p>
+                <p className="text-[#9ca3af] text-xs mt-1">Las fotos se guardarán directo en Drive. Creá la carpeta del evento para empezar.</p>
               </div>
               <button
                 onClick={createDriveFolder}
@@ -285,11 +285,11 @@ function EventPageContent({ id }: { id: string }) {
           ) : (
             /* Step 3: Everything configured */
             <div className="space-y-4">
-              <div className="flex items-center gap-3 p-3 bg-[#0a0a0a] rounded-xl border border-[#C9A132]/20">
-                <div className="w-8 h-8 rounded-lg bg-[#C9A132]/10 border border-[#C9A132]/30 flex items-center justify-center text-sm">📁</div>
+              <div className="flex items-center gap-3 p-3 bg-[#0a0a0a] rounded-xl border border-[#34D399]/20">
+                <div className="w-8 h-8 rounded-lg bg-[#34D399]/10 border border-[#34D399]/30 flex items-center justify-center text-sm">📁</div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-[#F5D87A] text-sm font-medium truncate" style={{ fontFamily: 'var(--font-playfair)' }}>{event.name}</p>
-                  <p className="text-[#5a4f3a] text-xs mt-0.5">{googleStatus.email} · {event._count.photos} foto{event._count.photos !== 1 ? 's' : ''} en Drive</p>
+                  <p className="text-white text-sm font-medium truncate" style={{ fontFamily: 'var(--font-space-grotesk)' }}>{event.name}</p>
+                  <p className="text-[#6b7280] text-xs mt-0.5">{googleStatus.email} · {event._count.photos} foto{event._count.photos !== 1 ? 's' : ''} en Drive</p>
                 </div>
                 <a href={event.driveFolderUrl!} target="_blank" rel="noopener noreferrer"
                    className="text-xs text-blue-400 hover:text-blue-300 border border-blue-900/30 px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap">
@@ -299,13 +299,13 @@ function EventPageContent({ id }: { id: string }) {
               <div className="flex gap-2 justify-end">
                 <a
                   href={`/api/auth/google?eventId=${id}`}
-                  className="border border-[#2B2210] hover:border-[#C9A132]/40 text-[#8a7a5a] hover:text-[#C9A132] px-4 py-2 rounded-lg text-xs tracking-widest uppercase transition-all"
+                  className="border border-[#1f2937] hover:border-[#34D399]/40 text-[#9ca3af] hover:text-[#34D399] px-4 py-2 rounded-lg text-xs tracking-widest uppercase transition-all"
                 >
                   Cambiar cuenta
                 </a>
                 <button
                   onClick={disconnectDrive}
-                  className="border border-[#2B2210] hover:border-red-900/40 text-[#5a4f3a] hover:text-red-500/60 px-4 py-2 rounded-lg text-xs tracking-widest uppercase transition-all"
+                  className="border border-[#1f2937] hover:border-red-900/40 text-[#6b7280] hover:text-red-500/60 px-4 py-2 rounded-lg text-xs tracking-widest uppercase transition-all"
                 >
                   Desconectar
                 </button>
@@ -317,7 +317,7 @@ function EventPageContent({ id }: { id: string }) {
         {/* Gallery */}
         <div className="card-dark p-6">
           <div className="flex items-center justify-between mb-5">
-            <h2 className="text-[#F5D87A] text-xs tracking-[0.25em] uppercase" style={{ fontFamily: 'var(--font-playfair)' }}>
+            <h2 className="text-white text-xs tracking-[0.25em] uppercase" style={{ fontFamily: 'var(--font-space-grotesk)' }}>
               Galería · {event.photos.length} foto{event.photos.length !== 1 ? 's' : ''}
             </h2>
             {event.driveFolderUrl && event.photos.length > 0 && (
@@ -329,8 +329,8 @@ function EventPageContent({ id }: { id: string }) {
 
           {event.photos.length === 0 ? (
             <div className="text-center py-14 space-y-2">
-              <p className="font-script text-4xl text-gold opacity-30" style={{ fontFamily: 'var(--font-great-vibes)' }}>Sin fotos todavía</p>
-              <p className="text-[#5a4f3a] text-sm">
+              <p className="text-4xl text-gold opacity-30" style={{ fontFamily: 'var(--font-space-grotesk)' }}>Sin fotos todavía</p>
+              <p className="text-[#6b7280] text-sm">
                 {event.driveFolderId
                   ? 'Compartí el QR para que los invitados empiecen a subir fotos'
                   : 'Configurá Google Drive para empezar a recibir fotos'}
@@ -344,7 +344,7 @@ function EventPageContent({ id }: { id: string }) {
                   href={photo.driveFileUrl || '#'}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="relative aspect-square rounded-xl overflow-hidden bg-[#111] group border border-[#2B2210]"
+                  className="relative aspect-square rounded-xl overflow-hidden bg-[#111] group border border-[#1f2937]"
                 >
                   <Image
                     src={photo.path} alt={photo.filename} fill
@@ -353,7 +353,7 @@ function EventPageContent({ id }: { id: string }) {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                   {photo.uploadedBy && (
-                    <div className="absolute bottom-0 inset-x-0 text-[#F5D87A] text-xs px-2 py-1.5 opacity-0 group-hover:opacity-100 transition-opacity truncate" style={{ fontFamily: 'var(--font-playfair)', fontStyle: 'italic' }}>
+                    <div className="absolute bottom-0 inset-x-0 text-white text-xs px-2 py-1.5 opacity-0 group-hover:opacity-100 transition-opacity truncate" style={{ fontFamily: 'var(--font-space-grotesk)', fontStyle: 'italic' }}>
                       {photo.uploadedBy}
                     </div>
                   )}

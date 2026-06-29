@@ -48,17 +48,17 @@ export default function NewEventPage() {
 
   return (
     <div className="min-h-screen bg-[#080808]">
-      <header className="border-b border-[#2B2210] px-6 py-4">
+      <header className="border-b border-[#1f2937] px-6 py-4">
         <div className="max-w-2xl mx-auto flex items-center gap-4">
-          <Link href="/admin/dashboard" className="text-[#C9A132]/50 hover:text-[#C9A132] text-sm tracking-widest uppercase transition-colors">← Volver</Link>
-          <div className="w-px h-4 bg-[#2B2210]" />
-          <h1 className="text-[#F5D87A] text-sm tracking-[0.2em] uppercase" style={{ fontFamily: 'var(--font-playfair)' }}>Nuevo Evento</h1>
+          <Link href="/admin/dashboard" className="text-[#34D399]/50 hover:text-[#34D399] text-sm tracking-widest uppercase transition-colors">← Volver</Link>
+          <div className="w-px h-4 bg-[#1f2937]" />
+          <h1 className="text-white text-sm tracking-[0.2em] uppercase" style={{ fontFamily: 'var(--font-space-grotesk)' }}>Nuevo Evento</h1>
         </div>
       </header>
 
       <main className="max-w-2xl mx-auto px-6 py-10">
         <div className="text-center mb-8">
-          <p className="font-script text-5xl text-gold" style={{ fontFamily: 'var(--font-great-vibes)' }}>Nuevo Evento</p>
+          <p className="text-5xl text-gold" style={{ fontFamily: 'var(--font-space-grotesk)' }}>Nuevo Evento</p>
           <div className="divider-gold mx-auto w-32 mt-3" />
         </div>
 
@@ -66,7 +66,7 @@ export default function NewEventPage() {
           <form onSubmit={handleSubmit} className="space-y-5">
 
             <div>
-              <label className="block text-xs text-[#C9A132]/70 mb-1.5 tracking-widest uppercase">Nombre del evento *</label>
+              <label className="block text-xs text-[#34D399]/70 mb-1.5 tracking-widest uppercase">Nombre del evento *</label>
               <input
                 type="text" required value={form.name}
                 onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
@@ -75,7 +75,7 @@ export default function NewEventPage() {
             </div>
 
             <div>
-              <label className="block text-xs text-[#C9A132]/70 mb-1.5 tracking-widest uppercase">Descripción (opcional)</label>
+              <label className="block text-xs text-[#34D399]/70 mb-1.5 tracking-widest uppercase">Descripción (opcional)</label>
               <textarea
                 value={form.description}
                 onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
@@ -85,7 +85,7 @@ export default function NewEventPage() {
             </div>
 
             <div>
-              <label className="block text-xs text-[#C9A132]/70 mb-1.5 tracking-widest uppercase">Fecha del evento *</label>
+              <label className="block text-xs text-[#34D399]/70 mb-1.5 tracking-widest uppercase">Fecha del evento *</label>
               <input
                 type="date" required value={form.date}
                 onChange={e => setForm(f => ({ ...f, date: e.target.value }))}
@@ -94,20 +94,20 @@ export default function NewEventPage() {
             </div>
 
             <div>
-              <label className="block text-xs text-[#C9A132]/70 mb-2 tracking-widest uppercase">Intervalo del slideshow</label>
+              <label className="block text-xs text-[#34D399]/70 mb-2 tracking-widest uppercase">Intervalo del slideshow</label>
               <div className="flex items-center gap-4">
                 <input
                   type="range" min="2" max="30" value={form.slideshowInterval}
                   onChange={e => setForm(f => ({ ...f, slideshowInterval: Number(e.target.value) }))}
-                  className="flex-1 accent-[#C9A132]"
+                  className="flex-1 accent-[#34D399]"
                 />
-                <span className="text-[#F5D87A] font-semibold w-14 text-right text-sm" style={{ fontFamily: 'var(--font-playfair)' }}>{form.slideshowInterval}s</span>
+                <span className="text-white font-semibold w-14 text-right text-sm" style={{ fontFamily: 'var(--font-space-grotesk)' }}>{form.slideshowInterval}s</span>
               </div>
             </div>
 
             {clients.length > 0 && (
               <div>
-                <label className="block text-xs text-[#C9A132]/70 mb-1.5 tracking-widest uppercase">Asignar a cliente (opcional)</label>
+                <label className="block text-xs text-[#34D399]/70 mb-1.5 tracking-widest uppercase">Asignar a cliente (opcional)</label>
                 <select
                   value={form.clientId}
                   onChange={e => setForm(f => ({ ...f, clientId: e.target.value }))}
@@ -128,7 +128,7 @@ export default function NewEventPage() {
             <div className="divider-gold opacity-30" />
 
             <div className="flex gap-3">
-              <Link href="/admin/dashboard" className="flex-1 text-center border border-[#2B2210] text-[#8a7a5a] hover:text-[#C9A132] py-3 rounded-xl text-xs tracking-widest uppercase transition-colors">Cancelar</Link>
+              <Link href="/admin/dashboard" className="flex-1 text-center border border-[#1f2937] text-[#9ca3af] hover:text-[#34D399] py-3 rounded-xl text-xs tracking-widest uppercase transition-colors">Cancelar</Link>
               <button type="submit" disabled={loading} className="flex-1 btn-gold py-3 rounded-xl text-xs tracking-widest uppercase">
                 {loading ? 'Creando...' : 'Crear Evento'}
               </button>

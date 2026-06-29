@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useRef, use } from 'react'
+import Image from 'next/image'
 import { getSocket } from '@/lib/socket-client'
 
 interface EventData {
@@ -74,7 +75,7 @@ export default function GuestPage({ params }: { params: Promise<{ code: string }
   if (loading) {
     return (
       <div className="min-h-screen bg-[#080808] flex items-center justify-center">
-        <p className="font-script text-5xl text-gold" style={{ fontFamily: 'var(--font-great-vibes)' }}>
+        <p className="text-5xl text-gold" style={{ fontFamily: 'var(--font-space-grotesk)' }}>
           Cargando...
         </p>
       </div>
@@ -86,14 +87,14 @@ export default function GuestPage({ params }: { params: Promise<{ code: string }
     return (
       <div className="min-h-screen bg-[#080808] flex items-center justify-center p-4">
         <div className="card-dark p-10 text-center max-w-sm w-full glow-gold space-y-4">
-          <p className="font-script text-5xl text-gold opacity-50" style={{ fontFamily: 'var(--font-great-vibes)' }}>
+          <p className="text-5xl text-gold opacity-50" style={{ fontFamily: 'var(--font-space-grotesk)' }}>
             Oops...
           </p>
-          <p className="text-[#F5D87A] text-sm tracking-wide" style={{ fontFamily: 'var(--font-playfair)' }}>
+          <p className="text-white text-sm tracking-wide" style={{ fontFamily: 'var(--font-space-grotesk)' }}>
             Evento no encontrado
           </p>
-          <p className="text-[#5a4f3a] text-xs">
-            El código <span className="font-mono text-[#C9A132]">{code}</span> no corresponde a ningún evento activo.
+          <p className="text-[#6b7280] text-xs">
+            El código <span className="font-mono text-[#34D399]">{code}</span> no corresponde a ningún evento activo.
           </p>
         </div>
       </div>
@@ -105,9 +106,9 @@ export default function GuestPage({ params }: { params: Promise<{ code: string }
     return (
       <div className="min-h-screen bg-[#080808] flex items-center justify-center p-4">
         <div className="card-dark p-10 text-center max-w-sm w-full glow-gold space-y-4">
-          <p className="font-script text-5xl text-gold" style={{ fontFamily: 'var(--font-great-vibes)' }}>{event.name}</p>
+          <p className="text-5xl text-gold" style={{ fontFamily: 'var(--font-space-grotesk)' }}>{event.name}</p>
           <div className="divider-gold mx-auto w-24" />
-          <p className="text-[#8a7a5a] text-sm" style={{ fontFamily: 'var(--font-playfair)', fontStyle: 'italic' }}>
+          <p className="text-[#9ca3af] text-sm" style={{ fontFamily: 'var(--font-space-grotesk)', fontStyle: 'italic' }}>
             Este evento ya no está recibiendo fotos.
           </p>
         </div>
@@ -119,13 +120,13 @@ export default function GuestPage({ params }: { params: Promise<{ code: string }
   if (success) {
     return (
       <div className="min-h-screen bg-[#080808] flex items-center justify-center p-4 relative overflow-hidden">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] rounded-full bg-[#C9A132]/8 blur-[100px] pointer-events-none" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] rounded-full bg-[#34D399]/8 blur-[100px] pointer-events-none" />
         <div className="relative z-10 card-dark p-10 text-center max-w-sm w-full glow-gold space-y-5">
-          <p className="font-script text-6xl text-gold" style={{ fontFamily: 'var(--font-great-vibes)' }}>
+          <p className="text-6xl text-gold" style={{ fontFamily: 'var(--font-space-grotesk)' }}>
             ¡Gracias!
           </p>
           <div className="divider-gold mx-auto w-32" />
-          <p className="text-[#F5D87A] text-sm tracking-wide" style={{ fontFamily: 'var(--font-playfair)', fontStyle: 'italic' }}>
+          <p className="text-white text-sm tracking-wide" style={{ fontFamily: 'var(--font-space-grotesk)', fontStyle: 'italic' }}>
             Tus fotos ya están en el slideshow del evento
           </p>
           <button
@@ -143,25 +144,23 @@ export default function GuestPage({ params }: { params: Promise<{ code: string }
   return (
     <div className="min-h-screen bg-[#080808] flex flex-col items-center py-10 px-4 relative overflow-hidden">
       {/* Background glow */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[400px] h-[300px] bg-[#C9A132]/5 blur-[120px] pointer-events-none" />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[400px] h-[300px] bg-[#34D399]/5 blur-[120px] pointer-events-none" />
 
       {/* Brand header */}
-      <div className="relative z-10 text-center mb-8 space-y-1">
-        <p className="font-script text-6xl text-gold" style={{ fontFamily: 'var(--font-great-vibes)' }}>
-          Freedom
-        </p>
-        <p className="text-[#C9A132]/50 text-xs tracking-[0.4em] uppercase" style={{ fontFamily: 'var(--font-playfair)' }}>
-          Fotos
+      <div className="relative z-10 flex flex-col items-center gap-2 mb-8">
+        <Image src="/logo.png" alt="Total Pics" width={52} height={52} className="drop-shadow-[0_0_12px_rgba(52,211,153,0.3)]" />
+        <p className="text-base font-black tracking-widest uppercase text-white" style={{ fontFamily: 'var(--font-exo2)' }}>
+          TOTAL <span className="text-[#34D399]">PICS</span>
         </p>
       </div>
 
       {/* Event name */}
       <div className="relative z-10 text-center mb-6 space-y-2">
-        <h1 className="text-[#F5D87A] text-xl" style={{ fontFamily: 'var(--font-playfair)', fontStyle: 'italic' }}>
+        <h1 className="text-white text-xl" style={{ fontFamily: 'var(--font-space-grotesk)', fontStyle: 'italic' }}>
           {event.name}
         </h1>
-        {event.description && <p className="text-[#8a7a5a] text-sm">{event.description}</p>}
-        <p className="text-[#5a4f3a] text-xs tracking-wide">
+        {event.description && <p className="text-[#9ca3af] text-sm">{event.description}</p>}
+        <p className="text-[#6b7280] text-xs tracking-wide">
           {new Date(event.date).toLocaleDateString('es-AR', { day: 'numeric', month: 'long', year: 'numeric' })}
         </p>
         <div className="divider-gold mx-auto w-32 mt-1" />
@@ -172,7 +171,7 @@ export default function GuestPage({ params }: { params: Promise<{ code: string }
 
         {/* Name input */}
         <div>
-          <label className="block text-xs text-[#C9A132]/60 mb-1.5 tracking-widest uppercase">
+          <label className="block text-xs text-[#34D399]/60 mb-1.5 tracking-widest uppercase">
             Tu nombre (opcional)
           </label>
           <input
@@ -197,30 +196,30 @@ export default function GuestPage({ params }: { params: Promise<{ code: string }
           />
           <label
             htmlFor="file-input"
-            className="flex flex-col items-center justify-center border-2 border-dashed border-[#2B2210] hover:border-[#C9A132]/50 rounded-2xl p-6 cursor-pointer transition-colors hover:bg-[#C9A132]/5 group"
+            className="flex flex-col items-center justify-center border-2 border-dashed border-[#1f2937] hover:border-[#34D399]/50 rounded-2xl p-6 cursor-pointer transition-colors hover:bg-[#34D399]/5 group"
           >
-            <span className="text-gold text-2xl mb-2 group-hover:scale-110 transition-transform" style={{ fontFamily: 'var(--font-playfair)' }}>✦</span>
-            <p className="text-[#F5D87A] text-sm font-medium tracking-wide" style={{ fontFamily: 'var(--font-playfair)' }}>
+            <span className="text-gold text-2xl mb-2 group-hover:scale-110 transition-transform" style={{ fontFamily: 'var(--font-space-grotesk)' }}>✦</span>
+            <p className="text-white text-sm font-medium tracking-wide" style={{ fontFamily: 'var(--font-space-grotesk)' }}>
               Seleccionar fotos
             </p>
-            <p className="text-[#5a4f3a] text-xs mt-1">Podés elegir varias a la vez</p>
+            <p className="text-[#6b7280] text-xs mt-1">Podés elegir varias a la vez</p>
           </label>
         </div>
 
         {/* Previews */}
         {previews.length > 0 && (
           <div>
-            <p className="text-xs text-[#C9A132]/60 mb-2 tracking-widest uppercase">
+            <p className="text-xs text-[#34D399]/60 mb-2 tracking-widest uppercase">
               {selectedFiles.length} foto{selectedFiles.length !== 1 ? 's' : ''} seleccionada{selectedFiles.length !== 1 ? 's' : ''}
             </p>
             <div className="grid grid-cols-3 gap-2">
               {previews.map((src, i) => (
-                <div key={i} className="relative aspect-square rounded-xl overflow-hidden bg-[#111] group border border-[#2B2210]">
+                <div key={i} className="relative aspect-square rounded-xl overflow-hidden bg-[#111] group border border-[#1f2937]">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={src} alt="" className="w-full h-full object-cover" />
                   <button
                     onClick={() => removeFile(i)}
-                    className="absolute top-1 right-1 bg-[#080808]/80 border border-[#2B2210] text-[#C9A132] rounded-full w-5 h-5 text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="absolute top-1 right-1 bg-[#080808]/80 border border-[#1f2937] text-[#34D399] rounded-full w-5 h-5 text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                   >
                     ×
                   </button>
@@ -251,8 +250,8 @@ export default function GuestPage({ params }: { params: Promise<{ code: string }
         </button>
       </div>
 
-      <p className="relative z-10 text-[#3a3020] text-xs tracking-wider mt-6">
-        Freedom Fotos · {event.code}
+      <p className="relative z-10 text-[#374151] text-xs tracking-wider mt-6">
+        Total Pics · {event.code}
       </p>
     </div>
   )
