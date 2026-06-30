@@ -33,12 +33,11 @@ export default function GuestPage({ params }: { params: Promise<{ code: string }
 
   function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files || []).filter(f => f.type.startsWith('image/'))
-    setSelectedFiles(prev => [...prev, ...files])
-    files.forEach(file => {
-      const reader = new FileReader()
-      reader.onload = ev => setPreviews(prev => [...prev, ev.target?.result as string])
-      reader.readAsDataURL(file)
-    })
+    if (files.length === 0) return
+    setSelectedFiles([files[0]])
+    const reader = new FileReader()
+    reader.onload = ev => setPreviews([ev.target?.result as string])
+    reader.readAsDataURL(files[0])
   }
 
   function removeFile(index: number) {
@@ -189,7 +188,6 @@ export default function GuestPage({ params }: { params: Promise<{ code: string }
             ref={fileInputRef}
             type="file"
             accept="image/*"
-            multiple
             onChange={handleFileSelect}
             className="hidden"
             id="file-input"
@@ -200,9 +198,9 @@ export default function GuestPage({ params }: { params: Promise<{ code: string }
           >
             <span className="text-gold text-2xl mb-2 group-hover:scale-110 transition-transform" style={{ fontFamily: 'var(--font-space-grotesk)' }}>✦</span>
             <p className="text-white text-sm font-medium tracking-wide" style={{ fontFamily: 'var(--font-space-grotesk)' }}>
-              Seleccionar fotos
+              Seleccionar foto
             </p>
-            <p className="text-[#6b7280] text-xs mt-1">Podés elegir varias a la vez</p>
+            <p className="text-[#6b7280] text-xs mt-1">Una foto por vez</p>
           </label>
         </div>
 
