@@ -1,8 +1,13 @@
-const UNSAFE = new Set(['LIKELY', 'VERY_LIKELY'])
+// POSSIBLE counts as unsafe for adult; LIKELY/VERY_LIKELY for violence
+const UNSAFE_ADULT    = new Set(['POSSIBLE', 'LIKELY', 'VERY_LIKELY'])
+const UNSAFE_VIOLENCE = new Set(['LIKELY', 'VERY_LIKELY'])
 
 export async function isSafeImage(buffer: Buffer): Promise<boolean> {
   const apiKey = process.env.GOOGLE_VISION_API_KEY
-  if (!apiKey) return true
+  if (!apiKey) {
+    console.warn('[nsfw] GOOGLE_VISION_API_KEY not set — skipping check')
+    return true
+  }
 
   try {
     const res = await fetch(
@@ -19,13 +24,24 @@ export async function isSafeImage(buffer: Buffer): Promise<boolean> {
       }
     )
 
-    if (!res.ok) return true
+    if (!res.ok) {
+      const text = await res.text()
+      console.error('[nsfw] Vision API HTTP error:', res.status, text)
+      return true
+    }
 
     const data = await res.json()
     const s = data.responses?.[0]?.safeSearchAnnotation
-    if (!s) return true
+    if (!s) {
+      console.warn('[nsfw] Vision API returned no safeSearchAnnotation')
+      return true
+    }
 
-    return !UNSAFE.has(s.adult) && !UNSAFE.has(s.violence)
+    console.log(`[nsfw] adult=${s.adult} violence=${s.violence} racy=${s.racy}`)
+
+    const safe = !UNSAFE_ADULT.has(s.adult) && !UNSAFE_VIOLENCE.has(s.violence)
+    if (!safe) console.log('[nsfw] image REJECTED')
+    return safe
   } catch (err) {
     console.error('[nsfw] Vision API error, allowing image:', err)
     return true
