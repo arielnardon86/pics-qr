@@ -101,6 +101,36 @@ function EventPageContent({ id }: { id: string }) {
     setTimeout(() => setCopying(false), 2000)
   }
 
+  async function downloadQR() {
+    if (!qrData || !event) return
+    const W = 500
+    const pad = 40
+    const qrSize = 400
+    const gap = 24
+    const H = pad + qrSize + gap + 36 + 10 + 22 + pad
+    const canvas = document.createElement('canvas')
+    canvas.width = W
+    canvas.height = H
+    const ctx = canvas.getContext('2d')!
+    ctx.fillStyle = '#ffffff'
+    ctx.fillRect(0, 0, W, H)
+    const img = new window.Image()
+    img.src = qrData.qr
+    await new Promise(r => { img.onload = r })
+    ctx.drawImage(img, (W - qrSize) / 2, pad, qrSize, qrSize)
+    ctx.textAlign = 'center'
+    ctx.fillStyle = '#1a1a2e'
+    ctx.font = 'bold 28px monospace'
+    ctx.fillText(qrData.code, W / 2, pad + qrSize + gap + 28)
+    ctx.fillStyle = '#6b7280'
+    ctx.font = '15px sans-serif'
+    ctx.fillText('www.totalpics.com.ar', W / 2, pad + qrSize + gap + 28 + 10 + 18)
+    const link = document.createElement('a')
+    link.href = canvas.toDataURL('image/png')
+    link.download = `qr-${event.code}.png`
+    link.click()
+  }
+
   async function createDriveFolder() {
     setDriveLoading(true)
     const res = await fetch(`/api/events/${id}/drive`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' })
@@ -185,9 +215,9 @@ function EventPageContent({ id }: { id: string }) {
                   <button onClick={copyLink} className="flex-1 border border-[#1f2937] hover:border-[#34D399]/50 text-[#34D399] hover:text-white py-2 rounded-lg text-xs tracking-widest uppercase transition-all">
                     {copying ? '✓ Copiado' : 'Copiar link'}
                   </button>
-                  <a href={qrData.qr} download={`qr-${event.code}.png`} className="flex-1 text-center bg-[#34D399]/10 hover:bg-[#34D399]/20 text-white py-2 rounded-lg text-xs tracking-widest uppercase transition-all">
+                  <button onClick={downloadQR} className="flex-1 bg-[#34D399]/10 hover:bg-[#34D399]/20 text-white py-2 rounded-lg text-xs tracking-widest uppercase transition-all">
                     Descargar QR
-                  </a>
+                  </button>
                 </div>
               </div>
             )}

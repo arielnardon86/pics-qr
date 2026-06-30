@@ -1,15 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { getAuthAdmin } from '@/lib/auth'
+import { getAuthAdminFull } from '@/lib/auth'
 import QRCode from 'qrcode'
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const auth = await getAuthAdmin()
-  if (!auth) return NextResponse.json({ error: 'No autenticado' }, { status: 401 })
+  const admin = await getAuthAdminFull()
+  if (!admin) return NextResponse.json({ error: 'No autenticado' }, { status: 401 })
 
   const { id } = await params
   const event = await prisma.event.findFirst({
-    where: { id, adminId: auth.id },
+    where: {
+      id,
+      ...(admin.isSuperAdmin ? {} : { clientId: admin.id }),
+    },
   })
 
   if (!event) return NextResponse.json({ error: 'Evento no encontrado' }, { status: 404 })
