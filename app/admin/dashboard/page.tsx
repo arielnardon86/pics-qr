@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -12,7 +12,7 @@ interface Event {
   _count: { photos: number }
   client: { id: string; name: string; email: string } | null
 }
-interface Admin { id: string; email: string; name: string; isSuperAdmin: boolean }
+interface Admin { id: string; email: string; name: string; isSuperAdmin: boolean; logoUrl: string | null }
 
 function DashboardContent() {
   const router = useRouter()
@@ -21,6 +21,8 @@ function DashboardContent() {
   const [admin, setAdmin] = useState<Admin | null>(null)
   const [loading, setLoading] = useState(true)
   const [toast, setToast] = useState<{ msg: string; type: 'ok' | 'err' } | null>(null)
+  const [uploadingLogo, setUploadingLogo] = useState(false)
+  const logoInputRef = useRef<HTMLInputElement>(null)
 
   function showToast(msg: string, type: 'ok' | 'err' = 'ok') {
     setToast({ msg, type })
@@ -65,6 +67,32 @@ function DashboardContent() {
     if (res.ok) setEvents(e => e.filter(ev => ev.id !== id))
   }
 
+  async function handleLogoUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setUploadingLogo(true)
+    const formData = new FormData()
+    formData.append('logo', file)
+    const res = await fetch('/api/admin/logo', { method: 'POST', body: formData })
+    if (res.ok) {
+      const { logoUrl } = await res.json()
+      setAdmin(a => a ? { ...a, logoUrl } : a)
+      showToast('Logo actualizado ✓')
+    } else {
+      showToast('Error al subir el logo', 'err')
+    }
+    setUploadingLogo(false)
+    if (logoInputRef.current) logoInputRef.current.value = ''
+  }
+
+  async function handleLogoDelete() {
+    const res = await fetch('/api/admin/logo', { method: 'DELETE' })
+    if (res.ok) {
+      setAdmin(a => a ? { ...a, logoUrl: null } : a)
+      showToast('Logo eliminado')
+    }
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-[#080808] flex items-center justify-center">
@@ -104,6 +132,48 @@ function DashboardContent() {
       </header>
 
       <main className="max-w-5xl mx-auto px-6 py-10 space-y-8">
+
+        {/* Logo de marca — visible para todos los admins */}
+        <div className="card-dark p-5 flex items-center gap-5">
+          {/* Preview */}
+          <div className="w-16 h-16 rounded-xl bg-[#0f172a] border border-[#1f2937] flex items-center justify-center shrink-0 overflow-hidden">
+            {admin?.logoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={admin.logoUrl} alt="Logo" className="w-full h-full object-contain p-1" />
+            ) : (
+              <span className="text-[#374151] text-2xl">✦</span>
+            )}
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-white text-sm font-semibold tracking-wide">Logo de tu marca</p>
+            <p className="text-[#6b7280] text-xs mt-0.5">Aparece en el slideshow como watermark. PNG con fondo transparente recomendado.</p>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <input
+              ref={logoInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleLogoUpload}
+              className="hidden"
+              id="logo-input"
+            />
+            <label
+              htmlFor="logo-input"
+              className={`cursor-pointer btn-gold px-4 py-2 rounded-lg text-xs tracking-widest uppercase ${uploadingLogo ? 'opacity-50 pointer-events-none' : ''}`}
+            >
+              {uploadingLogo ? 'Subiendo...' : admin?.logoUrl ? 'Cambiar' : 'Subir logo'}
+            </label>
+            {admin?.logoUrl && (
+              <button
+                onClick={handleLogoDelete}
+                className="text-xs text-[#6b7280] hover:text-red-500/70 hover:bg-red-900/10 px-3 py-2 rounded-lg transition-colors"
+              >
+                ✕
+              </button>
+            )}
+          </div>
+        </div>
+
         <div className="flex items-end justify-between">
           <div>
             <h1 className="text-3xl text-white" style={{ fontFamily: 'var(--font-space-grotesk)', fontStyle: 'italic' }}>

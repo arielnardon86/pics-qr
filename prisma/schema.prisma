@@ -13,6 +13,7 @@ model Admin {
   password     String
   name         String
   isSuperAdmin Boolean  @default(false)
+  logoUrl      String?
   ownedEvents  Event[]  @relation("EventOwner")
   clientEvents Event[]  @relation("EventClient")
   createdAt    DateTime @default(now())

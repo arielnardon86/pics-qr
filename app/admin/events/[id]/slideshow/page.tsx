@@ -9,6 +9,7 @@ interface Photo {
 }
 interface EventData {
   id: string; name: string; slideshowInterval: number
+  client: { logoUrl: string | null } | null
 }
 
 export default function SlideshowPage({ params }: { params: Promise<{ id: string }> }) {
@@ -30,7 +31,7 @@ export default function SlideshowPage({ params }: { params: Promise<{ id: string
       ])
       if (eventRes.ok) {
         const data = await eventRes.json()
-        setEvent({ id: data.event.id, name: data.event.name, slideshowInterval: data.event.slideshowInterval })
+        setEvent({ id: data.event.id, name: data.event.name, slideshowInterval: data.event.slideshowInterval, client: data.event.client ?? null })
       }
       if (photosRes.ok) setPhotos((await photosRes.json()).photos)
       setLoading(false)
@@ -129,6 +130,17 @@ export default function SlideshowPage({ params }: { params: Promise<{ id: string
           sizes="100vw"
         />
       </div>
+
+      {/* Client logo watermark — always visible, top-right */}
+      {event?.client?.logoUrl && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={event.client.logoUrl}
+          alt="Logo"
+          className="absolute top-5 right-6 z-30 h-12 w-auto object-contain opacity-80 pointer-events-none"
+          style={{ filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.6))' }}
+        />
+      )}
 
       {/* Vignette overlay */}
       <div className="absolute inset-0 bg-radial-[at_50%_50%] from-transparent via-transparent to-black/40 pointer-events-none" />
