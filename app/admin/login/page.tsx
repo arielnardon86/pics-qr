@@ -40,7 +40,7 @@ export default function LoginPage() {
         {/* Brand */}
         <div className="text-center space-y-3">
           <Link href="/" className="flex flex-col items-center gap-2">
-            <Image src="/logo.png" alt="Total Pics" width={64} height={64} className="drop-shadow-[0_0_16px_rgba(52,211,153,0.3)]" />
+            <Image src="/logo.png" alt="Total Pics" width={64} height={64} unoptimized className="drop-shadow-[0_0_16px_rgba(52,211,153,0.3)]" />
             <p className="text-xl font-black tracking-widest uppercase text-white" style={{ fontFamily: 'var(--font-exo2)' }}>
               TOTAL <span className="text-[#34D399]">PICS</span>
             </p>

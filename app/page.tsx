@@ -22,7 +22,7 @@ export default function Home() {
       {/* ── NAV ── */}
       <nav className="relative z-20 flex items-center justify-between px-6 sm:px-12 py-5 border-b border-white/5">
         <Link href="/" className="flex items-center gap-3">
-          <Image src="/logo.png" alt="Total Pics" width={36} height={36} className="drop-shadow-[0_0_10px_rgba(52,211,153,0.4)]" />
+          <Image src="/logo.png" alt="Total Pics" width={36} height={36} unoptimized className="drop-shadow-[0_0_10px_rgba(52,211,153,0.4)]" />
           <span className="font-black tracking-widest uppercase text-white text-sm" style={{ fontFamily: 'var(--font-exo2)' }}>
             TOTAL <span className="text-[#34D399]">PICS</span>
           </span>

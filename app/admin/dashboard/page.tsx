@@ -86,7 +86,7 @@ function DashboardContent() {
       <header className="border-b border-[#1f2937] bg-[#080808]/95 backdrop-blur-sm sticky top-0 z-20 px-6 py-4">
         <div className="max-w-5xl mx-auto flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
-            <Image src="/logo.png" alt="Total Pics" width={32} height={32} />
+            <Image src="/logo.png" alt="Total Pics" width={32} height={32} unoptimized />
             <span className="font-black tracking-widest uppercase text-white text-sm hidden sm:block" style={{ fontFamily: 'var(--font-exo2)' }}>
               TOTAL <span className="text-[#34D399]">PICS</span>
             </span>

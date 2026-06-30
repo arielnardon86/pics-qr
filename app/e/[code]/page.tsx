@@ -148,7 +148,7 @@ export default function GuestPage({ params }: { params: Promise<{ code: string }
 
       {/* Brand header */}
       <div className="relative z-10 flex flex-col items-center gap-2 mb-8">
-        <Image src="/logo.png" alt="Total Pics" width={52} height={52} className="drop-shadow-[0_0_12px_rgba(52,211,153,0.3)]" />
+        <Image src="/logo.png" alt="Total Pics" width={52} height={52} unoptimized className="drop-shadow-[0_0_12px_rgba(52,211,153,0.3)]" />
         <p className="text-base font-black tracking-widest uppercase text-white" style={{ fontFamily: 'var(--font-exo2)' }}>
           TOTAL <span className="text-[#34D399]">PICS</span>
         </p>
