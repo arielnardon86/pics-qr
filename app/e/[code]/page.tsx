@@ -19,7 +19,14 @@ export default function GuestPage({ params }: { params: Promise<{ code: string }
   const [uploading, setUploading] = useState(false)
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState('')
+  const [, setTick] = useState(0)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // Recheck time window every minute so the page reacts if it expires while open
+  useEffect(() => {
+    const timer = setInterval(() => setTick(t => t + 1), 60_000)
+    return () => clearInterval(timer)
+  }, [])
 
   useEffect(() => {
     async function load() {
@@ -129,34 +136,64 @@ export default function GuestPage({ params }: { params: Promise<{ code: string }
   if (uploadStatus === 'too_early') {
     const startsAt = new Date(new Date(event.date).getTime() - 24 * 60 * 60 * 1000)
     return (
-      <div className="min-h-screen bg-[#080808] flex items-center justify-center p-4">
-        <div className="card-dark p-10 text-center max-w-sm w-full glow-gold space-y-4">
-          <p className="text-5xl text-gold" style={{ fontFamily: 'var(--font-space-grotesk)' }}>{event.name}</p>
-          <div className="divider-gold mx-auto w-24" />
-          <p className="text-white text-sm font-semibold tracking-wide">El evento aún no comenzó</p>
-          <p className="text-[#6b7280] text-xs">
+      <div className="min-h-screen bg-[#080808] flex flex-col items-center justify-center p-6 relative overflow-hidden">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[400px] h-[300px] bg-[#34D399]/5 blur-[120px] pointer-events-none" />
+        <div className="relative z-10 flex flex-col items-center gap-2 mb-8">
+          <Image src="/logo.png" alt="Total Pics" width={48} height={48} unoptimized className="drop-shadow-[0_0_12px_rgba(52,211,153,0.3)]" />
+          <p className="text-sm font-black tracking-widest uppercase text-white" style={{ fontFamily: 'var(--font-exo2)' }}>
+            TOTAL <span className="text-[#34D399]">PICS</span>
+          </p>
+        </div>
+        <div className="relative z-10 card-dark p-8 w-full max-w-sm glow-gold text-center space-y-5">
+          <div className="w-14 h-14 rounded-2xl bg-[#34D399]/10 border border-[#34D399]/20 flex items-center justify-center mx-auto text-2xl">
+            🕐
+          </div>
+          <div>
+            <h1 className="text-white font-black text-xl uppercase tracking-wide" style={{ fontFamily: 'var(--font-exo2)' }}>
+              {event.name}
+            </h1>
+            <div className="divider-gold mx-auto w-20 mt-3" />
+          </div>
+          <p className="text-white font-semibold tracking-wide text-sm">El evento aún no comenzó</p>
+          <p className="text-[#6b7280] text-xs leading-relaxed">
             Podrás subir fotos a partir del{' '}
-            <span className="text-[#34D399]">
+            <span className="text-[#34D399] font-semibold">
               {startsAt.toLocaleDateString('es-AR', { day: 'numeric', month: 'long' })} a las{' '}
               {startsAt.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}
             </span>
           </p>
         </div>
+        <p className="relative z-10 text-[#374151] text-xs tracking-wider mt-6">Total Pics · {event.code}</p>
       </div>
     )
   }
 
   if (uploadStatus === 'too_late') {
     return (
-      <div className="min-h-screen bg-[#080808] flex items-center justify-center p-4">
-        <div className="card-dark p-10 text-center max-w-sm w-full glow-gold space-y-4">
-          <p className="text-5xl text-gold" style={{ fontFamily: 'var(--font-space-grotesk)' }}>{event.name}</p>
-          <div className="divider-gold mx-auto w-24" />
-          <p className="text-white text-sm font-semibold tracking-wide">El evento ya finalizó</p>
-          <p className="text-[#9ca3af] text-xs" style={{ fontStyle: 'italic' }}>
-            Gracias por haber participado. Las fotos quedaron guardadas.
+      <div className="min-h-screen bg-[#080808] flex flex-col items-center justify-center p-6 relative overflow-hidden">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[400px] h-[300px] bg-[#34D399]/5 blur-[120px] pointer-events-none" />
+        <div className="relative z-10 flex flex-col items-center gap-2 mb-8">
+          <Image src="/logo.png" alt="Total Pics" width={48} height={48} unoptimized className="drop-shadow-[0_0_12px_rgba(52,211,153,0.3)]" />
+          <p className="text-sm font-black tracking-widest uppercase text-white" style={{ fontFamily: 'var(--font-exo2)' }}>
+            TOTAL <span className="text-[#34D399]">PICS</span>
           </p>
         </div>
+        <div className="relative z-10 card-dark p-8 w-full max-w-sm glow-gold text-center space-y-5">
+          <div className="w-14 h-14 rounded-2xl bg-[#34D399]/10 border border-[#34D399]/20 flex items-center justify-center mx-auto text-2xl">
+            ✦
+          </div>
+          <div>
+            <h1 className="text-white font-black text-xl uppercase tracking-wide" style={{ fontFamily: 'var(--font-exo2)' }}>
+              {event.name}
+            </h1>
+            <div className="divider-gold mx-auto w-20 mt-3" />
+          </div>
+          <p className="text-white font-semibold tracking-wide text-sm">El evento ya finalizó</p>
+          <p className="text-[#9ca3af] text-xs leading-relaxed" style={{ fontStyle: 'italic' }}>
+            Gracias por haber participado.<br />Las fotos quedaron guardadas para siempre.
+          </p>
+        </div>
+        <p className="relative z-10 text-[#374151] text-xs tracking-wider mt-6">Total Pics · {event.code}</p>
       </div>
     )
   }
