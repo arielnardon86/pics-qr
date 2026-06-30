@@ -27,12 +27,16 @@ export default function Home() {
             TOTAL <span className="text-[#34D399]">PICS</span>
           </span>
         </Link>
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-4 sm:gap-6">
           <a href="#como-funciona" className="text-[#9ca3af] hover:text-white text-xs tracking-widest uppercase transition-colors hidden sm:block">
             Cómo funciona
           </a>
+          <span className="text-[#6b7280] text-xs hidden md:block">¿Sos organizador de eventos?</span>
+          <Link href="/admin/register" className="text-[#9ca3af] hover:text-white text-xs tracking-widest uppercase transition-colors border border-[#1f2937] hover:border-[#34D399]/40 px-4 py-2 rounded-lg">
+            Registrate
+          </Link>
           <Link href="/admin/login" className="btn-gold px-5 py-2 rounded-lg text-xs tracking-widest uppercase font-bold">
-            Admin
+            Ingresá
           </Link>
         </div>
       </nav>
