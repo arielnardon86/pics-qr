@@ -70,6 +70,14 @@ export default function GuestPage({ params }: { params: Promise<{ code: string }
     }
   }
 
+  function getUploadStatus(eventDate: string): 'too_early' | 'open' | 'too_late' {
+    const now = Date.now()
+    const date = new Date(eventDate).getTime()
+    if (now < date - 24 * 60 * 60 * 1000) return 'too_early'
+    if (now > date + 48 * 60 * 60 * 1000) return 'too_late'
+    return 'open'
+  }
+
   // ── Loading ──────────────────────────────────────────────────────────────
   if (loading) {
     return (
@@ -109,6 +117,44 @@ export default function GuestPage({ params }: { params: Promise<{ code: string }
           <div className="divider-gold mx-auto w-24" />
           <p className="text-[#9ca3af] text-sm" style={{ fontFamily: 'var(--font-space-grotesk)', fontStyle: 'italic' }}>
             Este evento ya no está recibiendo fotos.
+          </p>
+        </div>
+      </div>
+    )
+  }
+
+  // ── Time window check ────────────────────────────────────────────────────
+  const uploadStatus = getUploadStatus(event.date)
+
+  if (uploadStatus === 'too_early') {
+    const startsAt = new Date(new Date(event.date).getTime() - 24 * 60 * 60 * 1000)
+    return (
+      <div className="min-h-screen bg-[#080808] flex items-center justify-center p-4">
+        <div className="card-dark p-10 text-center max-w-sm w-full glow-gold space-y-4">
+          <p className="text-5xl text-gold" style={{ fontFamily: 'var(--font-space-grotesk)' }}>{event.name}</p>
+          <div className="divider-gold mx-auto w-24" />
+          <p className="text-white text-sm font-semibold tracking-wide">El evento aún no comenzó</p>
+          <p className="text-[#6b7280] text-xs">
+            Podrás subir fotos a partir del{' '}
+            <span className="text-[#34D399]">
+              {startsAt.toLocaleDateString('es-AR', { day: 'numeric', month: 'long' })} a las{' '}
+              {startsAt.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}
+            </span>
+          </p>
+        </div>
+      </div>
+    )
+  }
+
+  if (uploadStatus === 'too_late') {
+    return (
+      <div className="min-h-screen bg-[#080808] flex items-center justify-center p-4">
+        <div className="card-dark p-10 text-center max-w-sm w-full glow-gold space-y-4">
+          <p className="text-5xl text-gold" style={{ fontFamily: 'var(--font-space-grotesk)' }}>{event.name}</p>
+          <div className="divider-gold mx-auto w-24" />
+          <p className="text-white text-sm font-semibold tracking-wide">El evento ya finalizó</p>
+          <p className="text-[#9ca3af] text-xs" style={{ fontStyle: 'italic' }}>
+            Gracias por haber participado. Las fotos quedaron guardadas.
           </p>
         </div>
       </div>

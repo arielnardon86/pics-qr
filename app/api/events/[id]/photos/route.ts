@@ -23,6 +23,13 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   const event = await prisma.event.findUnique({ where: { id } })
   if (!event) return NextResponse.json({ error: 'Evento no encontrado' }, { status: 404 })
   if (!event.isActive) return NextResponse.json({ error: 'El evento no está activo' }, { status: 403 })
+
+  const now = Date.now()
+  const eventTime = new Date(event.date).getTime()
+  if (now < eventTime - 24 * 60 * 60 * 1000)
+    return NextResponse.json({ error: 'El evento aún no comenzó' }, { status: 403 })
+  if (now > eventTime + 48 * 60 * 60 * 1000)
+    return NextResponse.json({ error: 'El evento ya finalizó' }, { status: 403 })
   if (!event.driveFolderId) return NextResponse.json({ error: 'Este evento no tiene Google Drive configurado.' }, { status: 400 })
   if (!event.googleAccessToken) return NextResponse.json({ error: 'Cuenta de Google no conectada para este evento.' }, { status: 400 })
 
