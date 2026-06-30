@@ -6,18 +6,18 @@ export async function POST(req: NextRequest) {
   try {
     const { email, password, name, setupKey } = await req.json()
 
-    if (setupKey !== process.env.SETUP_KEY && process.env.SETUP_KEY) {
-      return NextResponse.json({ error: 'Clave de configuración inválida' }, { status: 403 })
-    }
-
     const existing = await prisma.admin.findUnique({ where: { email } })
     if (existing) {
       return NextResponse.json({ error: 'El email ya está registrado' }, { status: 409 })
     }
 
-    // First admin to register becomes super admin
+    // First admin becomes super admin; only that first registration needs a setupKey
     const adminCount = await prisma.admin.count()
     const isSuperAdmin = adminCount === 0
+
+    if (isSuperAdmin && process.env.SETUP_KEY && setupKey !== process.env.SETUP_KEY) {
+      return NextResponse.json({ error: 'Clave de configuración inválida' }, { status: 403 })
+    }
 
     const hashedPassword = await hashPassword(password)
     const admin = await prisma.admin.create({

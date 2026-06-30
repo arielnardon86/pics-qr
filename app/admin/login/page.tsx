@@ -99,6 +99,13 @@ export default function LoginPage() {
           </form>
         </div>
 
+        <p className="text-center text-[#6b7280] text-xs tracking-wide">
+          ¿Sos organizador de eventos?{' '}
+          <Link href="/admin/register" className="text-[#34D399]/70 hover:text-[#34D399] transition-colors">
+            Creá tu cuenta gratis
+          </Link>
+        </p>
+
       </div>
     </div>
   )
