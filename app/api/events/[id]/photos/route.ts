@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { uploadBufferToDrive, refreshTokenIfNeeded } from '@/lib/google-drive'
+import { isSafeImage } from '@/lib/nsfw'
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -67,6 +68,12 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       const mimeType = mimeMap[ext] || 'image/jpeg'
       const buffer = Buffer.from(await file.arrayBuffer())
 
+      const safe = await isSafeImage(buffer)
+      if (!safe) {
+        console.warn(`[nsfw] imagen rechazada: ${filename}`)
+        continue
+      }
+
       const driveFile = await uploadBufferToDrive(freshTokens, event.driveFolderId!, filename, buffer, mimeType)
 
       const photo = await prisma.photo.create({
@@ -81,6 +88,10 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       })
 
       saved.push(photo)
+    }
+
+    if (saved.length === 0) {
+      return NextResponse.json({ error: 'Las fotos no cumplen con las políticas de contenido del evento.' }, { status: 422 })
     }
 
     return NextResponse.json({ photos: saved }, { status: 201 })

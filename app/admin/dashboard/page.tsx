@@ -161,7 +161,7 @@ function DashboardContent() {
                   <span><span className="text-[#34D399]">◆</span> <span className="font-mono text-white">{event.code}</span></span>
                 </div>
 
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   <Link href={`/admin/events/${event.id}`} className="flex-1 text-center border border-[#1f2937] hover:border-[#34D399]/50 text-[#34D399] hover:text-white py-2 rounded-lg text-xs tracking-widest uppercase transition-all">Gestionar</Link>
                   <Link href={`/admin/events/${event.id}/slideshow`} target="_blank" className="flex-1 text-center bg-[#34D399]/10 hover:bg-[#34D399]/20 text-white py-2 rounded-lg text-xs tracking-widest uppercase transition-all">Slideshow</Link>
                   {isSuperAdmin && (

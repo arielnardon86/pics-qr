@@ -1,68 +1,121 @@
+'use client'
+
 import Link from 'next/link'
 import Image from 'next/image'
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { QrCode, CloudUpload, Monitor, Heart } from 'lucide-react'
 
 export default function Home() {
+  const router = useRouter()
+  const [code, setCode] = useState('')
+
+  function handleScan(e: React.FormEvent) {
+    e.preventDefault()
+    const trimmed = code.trim().toUpperCase()
+    if (trimmed) router.push(`/e/${trimmed}`)
+  }
+
   return (
-    <main className="min-h-screen bg-[#09090b] flex flex-col items-center justify-center p-6 relative overflow-hidden">
+    <div className="min-h-screen bg-[#09090b] flex flex-col overflow-hidden">
 
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full bg-[#34D399]/6 blur-[140px]" />
-        <div className="absolute bottom-1/4 right-1/4 w-[300px] h-[300px] rounded-full bg-[#14B8A6]/4 blur-[120px]" />
-      </div>
-
-      <div className="relative z-10 max-w-2xl w-full text-center space-y-10">
-
-        {/* Logo */}
-        <div className="flex flex-col items-center gap-4">
-          <Image
-            src="/logo.png"
-            alt="Total Pics"
-            width={120}
-            height={120}
-            className="drop-shadow-[0_0_24px_rgba(52,211,153,0.3)]"
-            priority
-          />
-          <div>
-            <p className="text-4xl sm:text-5xl font-black tracking-widest uppercase text-white" style={{ fontFamily: 'var(--font-exo2)' }}>
-              TOTAL <span className="text-[#34D399]">PICS</span>
-            </p>
-            <p className="text-xs tracking-[0.4em] uppercase text-[#34D399]/60 mt-1">Tus momentos, en grande</p>
-          </div>
-        </div>
-
-        <div className="divider-gold mx-auto w-48" />
-
-        <p className="text-[#9ca3af] text-lg leading-relaxed">
-          Compartí y proyectá los momentos más especiales de tu evento en tiempo real
-        </p>
-
-        {/* Feature cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-left">
-          {[
-            { num: '01', title: 'Creá tu evento', desc: 'Casamientos, 15 años, fiestas y más' },
-            { num: '02', title: 'Invitados suben fotos', desc: 'Solo escanean el QR o usan el link' },
-            { num: '03', title: 'Proyectá en vivo', desc: 'Slideshow automático con tus fotos' },
-          ].map(f => (
-            <div key={f.title} className="card-dark p-5 space-y-3 hover:border-[#34D399]/30 transition-colors">
-              <span className="text-[#34D399]/40 text-xs font-bold tracking-widest" style={{ fontFamily: 'var(--font-exo2)' }}>{f.num}</span>
-              <h3 className="font-bold text-white text-sm tracking-wide uppercase" style={{ fontFamily: 'var(--font-exo2)' }}>
-                {f.title}
-              </h3>
-              <p className="text-[#6b7280] text-sm">{f.desc}</p>
-            </div>
-          ))}
-        </div>
-
-        <div className="flex justify-center">
-          <Link href="/admin/login" className="btn-gold px-10 py-4 rounded-xl text-sm tracking-widest uppercase font-bold">
-            Panel de administrador
+      {/* ── NAV ── */}
+      <nav className="relative z-20 flex items-center justify-between px-6 sm:px-12 py-5 border-b border-white/5">
+        <Link href="/" className="flex items-center gap-3">
+          <Image src="/logo.png" alt="Total Pics" width={36} height={36} className="drop-shadow-[0_0_10px_rgba(52,211,153,0.4)]" />
+          <span className="font-black tracking-widest uppercase text-white text-sm" style={{ fontFamily: 'var(--font-exo2)' }}>
+            TOTAL <span className="text-[#34D399]">PICS</span>
+          </span>
+        </Link>
+        <div className="flex items-center gap-6">
+          <a href="#como-funciona" className="text-[#9ca3af] hover:text-white text-xs tracking-widest uppercase transition-colors hidden sm:block">
+            Cómo funciona
+          </a>
+          <Link href="/admin/login" className="btn-gold px-5 py-2 rounded-lg text-xs tracking-widest uppercase font-bold">
+            Admin
           </Link>
         </div>
+      </nav>
 
-        <p className="text-[#374151] text-xs tracking-wider">
-          ¿Sos invitado? Escaneá el QR del evento o pedile el link al organizador.
+      {/* ── HERO ── */}
+      <section className="relative flex-1 flex items-center overflow-hidden min-h-[85vh]">
+
+        {/* Hero photo background */}
+        <div className="absolute inset-0">
+          <Image
+            src="/hero.jpg"
+            alt="Evento Total Pics"
+            fill
+            className="object-cover object-center"
+            priority
+          />
+          {/* Overlay: dark left for text, fade to transparent right */}
+          <div className="absolute inset-0 bg-gradient-to-r from-[#09090b]/92 via-[#09090b]/70 to-[#09090b]/20" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#09090b]/80 via-transparent to-[#09090b]/50" />
+        </div>
+
+        <div className="relative z-10 w-full max-w-6xl mx-auto px-6 sm:px-12 py-20">
+          <div className="max-w-lg space-y-6">
+            <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black uppercase leading-[1.05] text-white" style={{ fontFamily: 'var(--font-exo2)' }}>
+              COMPARTÍ<br />TUS FOTOS.<br />
+              <span className="text-[#34D399]">REVIVÍ<br />EL MOMENTO.</span>
+            </h1>
+            <p className="text-white/70 text-base sm:text-lg max-w-sm leading-relaxed">
+              Escaneá el QR, subí tus fotos y mirálas en pantalla durante todo el evento.
+            </p>
+
+            <form onSubmit={handleScan} className="flex gap-3 max-w-sm pt-2">
+              <input
+                type="text"
+                value={code}
+                onChange={e => setCode(e.target.value)}
+                placeholder="Código del evento"
+                className="input-dark flex-1 text-sm uppercase tracking-widest font-bold placeholder:normal-case placeholder:tracking-normal placeholder:font-normal"
+              />
+              <button type="submit" className="btn-gold px-5 py-3 rounded-xl text-xs tracking-widest uppercase font-bold flex items-center gap-2 whitespace-nowrap">
+                <QrCode size={14} strokeWidth={2} />
+                Ir
+              </button>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      {/* ── CÓMO FUNCIONA ── */}
+      <section id="como-funciona" className="relative z-10 px-6 sm:px-12 py-20 border-t border-white/5">
+        <div className="max-w-5xl mx-auto">
+          <h2 className="text-center text-xs tracking-[0.4em] uppercase text-[#34D399]/70 mb-2 font-semibold" style={{ fontFamily: 'var(--font-exo2)' }}>
+            Cómo funciona
+          </h2>
+          <p className="text-center text-2xl sm:text-3xl font-black uppercase text-white mb-10" style={{ fontFamily: 'var(--font-exo2)' }}>
+            ¿CÓMO FUNCIONA?
+          </p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            {[
+              { icon: QrCode,      title: 'Escaneá el QR',       desc: 'Ingresá desde tu celular escaneando el código del evento.' },
+              { icon: CloudUpload, title: 'Subí tu foto',         desc: 'Elegí tu mejor foto y subila al álbum del evento.' },
+              { icon: Monitor,     title: 'Se muestra en vivo',   desc: 'Tus fotos se ven en la pantalla durante todo el evento.' },
+              { icon: Heart,       title: 'Reviví los recuerdos', desc: 'Todas las fotos quedan guardadas para compartir después.' },
+            ].map(step => (
+              <div key={step.title} className="card-dark p-6 space-y-3 hover:border-[#34D399]/25 transition-colors text-center">
+                <div className="w-12 h-12 rounded-xl bg-[#34D399]/10 border border-[#34D399]/20 flex items-center justify-center mx-auto">
+                  <step.icon size={22} className="text-[#34D399]" strokeWidth={1.5} />
+                </div>
+                <h3 className="font-bold text-white text-sm uppercase tracking-wide" style={{ fontFamily: 'var(--font-exo2)' }}>{step.title}</h3>
+                <p className="text-[#6b7280] text-sm leading-relaxed">{step.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── FOOTER ── */}
+      <footer className="border-t border-white/5 px-6 py-5 text-center">
+        <p className="text-[#374151] text-xs tracking-widest">
+          TOTAL PICS · Tus momentos, en grande
         </p>
-      </div>
-    </main>
+      </footer>
+    </div>
   )
 }

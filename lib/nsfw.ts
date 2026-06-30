@@ -1,0 +1,41 @@
+import * as tf from '@tensorflow/tfjs'
+import '@tensorflow/tfjs-backend-cpu'
+import sharp from 'sharp'
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let model: any = null
+
+async function getModel() {
+  if (!model) {
+    await tf.setBackend('cpu')
+    await tf.ready()
+    // Dynamic import avoids ESM/CJS issues at build time
+    const nsfwjs = await import('nsfwjs')
+    model = await nsfwjs.load()
+  }
+  return model
+}
+
+export async function isSafeImage(buffer: Buffer): Promise<boolean> {
+  try {
+    const { data } = await sharp(buffer)
+      .resize(224, 224)
+      .removeAlpha()
+      .raw()
+      .toBuffer({ resolveWithObject: true })
+
+    const m = await getModel()
+    const tensor = tf.tensor3d(new Uint8Array(data), [224, 224, 3])
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const predictions: Array<{ className: string; probability: number }> = await m.classify(tensor)
+    tensor.dispose()
+
+    const porn    = predictions.find(p => p.className === 'Porn')?.probability    ?? 0
+    const hentai  = predictions.find(p => p.className === 'Hentai')?.probability  ?? 0
+    return (porn + hentai) < 0.5
+  } catch (err) {
+    // Fail open: if the check crashes, don't block legitimate uploads
+    console.error('[nsfw] check failed, allowing image:', err)
+    return true
+  }
+}
