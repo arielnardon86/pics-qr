@@ -3,17 +3,25 @@ import '@tensorflow/tfjs-backend-cpu'
 import sharp from 'sharp'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-let model: any = null
+type NsfwModel = any
 
-async function getModel() {
-  if (!model) {
-    await tf.setBackend('cpu')
-    await tf.ready()
-    // Dynamic import avoids ESM/CJS issues at build time
-    const nsfwjs = await import('nsfwjs')
-    model = await nsfwjs.load()
+let modelPromise: Promise<NsfwModel> | null = null
+
+async function getModel(): Promise<NsfwModel> {
+  if (!modelPromise) {
+    modelPromise = (async () => {
+      await tf.setBackend('cpu')
+      await tf.ready()
+      const nsfwjs = await import('nsfwjs')
+      return nsfwjs.load()
+    })()
   }
-  return model
+  return modelPromise
+}
+
+// Call at server startup so the model is ready before the first upload
+export function warmupNsfw() {
+  getModel().catch(err => console.error('[nsfw] warmup failed:', err))
 }
 
 export async function isSafeImage(buffer: Buffer): Promise<boolean> {

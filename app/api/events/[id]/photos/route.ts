@@ -58,41 +58,48 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       webp: 'image/webp', heic: 'image/heic',
     }
 
-    const saved = []
+    // Read all buffers in parallel
+    const imageFiles = await Promise.all(
+      files
+        .filter(f => f.type.startsWith('image/'))
+        .map(async file => {
+          const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg'
+          return {
+            buffer: Buffer.from(await file.arrayBuffer()),
+            ext,
+            mimeType: mimeMap[ext] || 'image/jpeg',
+          }
+        })
+    )
 
-    for (const file of files) {
-      if (!file.type.startsWith('image/')) continue
+    // Run NSFW checks in parallel
+    const safeFlags = await Promise.all(imageFiles.map(({ buffer }) => isSafeImage(buffer)))
+    const safeImages = imageFiles.filter((_, i) => {
+      if (!safeFlags[i]) console.warn('[nsfw] imagen rechazada')
+      return safeFlags[i]
+    })
 
-      const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg'
-      const filename = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
-      const mimeType = mimeMap[ext] || 'image/jpeg'
-      const buffer = Buffer.from(await file.arrayBuffer())
-
-      const safe = await isSafeImage(buffer)
-      if (!safe) {
-        console.warn(`[nsfw] imagen rechazada: ${filename}`)
-        continue
-      }
-
-      const driveFile = await uploadBufferToDrive(freshTokens, event.driveFolderId!, filename, buffer, mimeType)
-
-      const photo = await prisma.photo.create({
-        data: {
-          eventId: id,
-          filename,
-          path: driveFile.thumbnailUrl,
-          uploadedBy: uploadedBy || null,
-          driveFileId: driveFile.id,
-          driveFileUrl: driveFile.url,
-        },
-      })
-
-      saved.push(photo)
-    }
-
-    if (saved.length === 0) {
+    if (safeImages.length === 0) {
       return NextResponse.json({ error: 'Las fotos no cumplen con las políticas de contenido del evento.' }, { status: 422 })
     }
+
+    // Upload safe images to Drive in parallel
+    const saved = await Promise.all(
+      safeImages.map(async ({ buffer, ext, mimeType }) => {
+        const filename = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
+        const driveFile = await uploadBufferToDrive(freshTokens, event.driveFolderId!, filename, buffer, mimeType)
+        return prisma.photo.create({
+          data: {
+            eventId: id,
+            filename,
+            path: driveFile.thumbnailUrl,
+            uploadedBy: uploadedBy || null,
+            driveFileId: driveFile.id,
+            driveFileUrl: driveFile.url,
+          },
+        })
+      })
+    )
 
     return NextResponse.json({ photos: saved }, { status: 201 })
   } catch (error) {
