@@ -5,7 +5,42 @@ import Image from 'next/image'
 import { getSocket } from '@/lib/socket-client'
 
 interface EventData {
-  id: string; name: string; description: string | null; date: string; code: string; isActive: boolean
+  id: string; name: string; description: string | null; date: string
+  code: string; isActive: boolean; nsfwFilter: boolean
+}
+
+// Module-level singleton — model survives re-renders and is shared across instances
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let nsfwModelCache: any = null
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let nsfwModelPromise: Promise<any> | null = null
+
+async function loadNsfwModel() {
+  if (nsfwModelCache) return nsfwModelCache
+  if (!nsfwModelPromise) {
+    nsfwModelPromise = import('nsfwjs')
+      .then(mod => mod.load())
+      .then(model => { nsfwModelCache = model; return model })
+  }
+  return nsfwModelPromise
+}
+
+async function isImageSafe(file: File): Promise<boolean> {
+  try {
+    const model = await loadNsfwModel()
+    const img = document.createElement('img')
+    const url = URL.createObjectURL(file)
+    img.src = url
+    await new Promise<void>(r => { img.onload = () => r() })
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const preds: Array<{ className: string; probability: number }> = await model.classify(img)
+    URL.revokeObjectURL(url)
+    const porn   = preds.find(p => p.className === 'Porn')?.probability   ?? 0
+    const hentai = preds.find(p => p.className === 'Hentai')?.probability ?? 0
+    return (porn + hentai) < 0.4
+  } catch {
+    return true // fail open
+  }
 }
 
 export default function GuestPage({ params }: { params: Promise<{ code: string }> }) {
@@ -17,12 +52,12 @@ export default function GuestPage({ params }: { params: Promise<{ code: string }
   const [selectedFiles, setSelectedFiles] = useState<File[]>([])
   const [previews, setPreviews] = useState<string[]>([])
   const [uploading, setUploading] = useState(false)
+  const [analyzing, setAnalyzing] = useState(false)
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState('')
   const [, setTick] = useState(0)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  // Recheck time window every minute so the page reacts if it expires while open
   useEffect(() => {
     const timer = setInterval(() => setTick(t => t + 1), 60_000)
     return () => clearInterval(timer)
@@ -31,20 +66,41 @@ export default function GuestPage({ params }: { params: Promise<{ code: string }
   useEffect(() => {
     async function load() {
       const res = await fetch(`/api/public/${code}`)
-      if (!res.ok) setNotFound(true)
-      else setEvent((await res.json()).event)
+      if (!res.ok) { setNotFound(true); setLoading(false); return }
+      const data = await res.json()
+      setEvent(data.event)
       setLoading(false)
+      // Pre-load model while user fills in their name
+      if (data.event.nsfwFilter) loadNsfwModel().catch(() => {})
     }
     load()
   }, [code])
 
-  function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files || []).filter(f => f.type.startsWith('image/'))
     if (files.length === 0) return
-    setSelectedFiles([files[0]])
+    const file = files[0]
+    setError('')
+
+    // Show preview immediately
+    setSelectedFiles([file])
     const reader = new FileReader()
     reader.onload = ev => setPreviews([ev.target?.result as string])
-    reader.readAsDataURL(files[0])
+    reader.readAsDataURL(file)
+
+    // NSFW check (runs in browser, no server load)
+    if (event?.nsfwFilter) {
+      setAnalyzing(true)
+      const safe = await isImageSafe(file)
+      setAnalyzing(false)
+      if (!safe) {
+        setSelectedFiles([])
+        setPreviews([])
+        if (fileInputRef.current) fileInputRef.current.value = ''
+        setError('Esta foto no cumple con las políticas de contenido del evento.')
+        return
+      }
+    }
   }
 
   function removeFile(index: number) {
@@ -89,9 +145,7 @@ export default function GuestPage({ params }: { params: Promise<{ code: string }
   if (loading) {
     return (
       <div className="min-h-screen bg-[#080808] flex items-center justify-center">
-        <p className="text-5xl text-gold" style={{ fontFamily: 'var(--font-space-grotesk)' }}>
-          Cargando...
-        </p>
+        <p className="text-5xl text-gold" style={{ fontFamily: 'var(--font-space-grotesk)' }}>Cargando...</p>
       </div>
     )
   }
@@ -101,15 +155,9 @@ export default function GuestPage({ params }: { params: Promise<{ code: string }
     return (
       <div className="min-h-screen bg-[#080808] flex items-center justify-center p-4">
         <div className="card-dark p-10 text-center max-w-sm w-full glow-gold space-y-4">
-          <p className="text-5xl text-gold opacity-50" style={{ fontFamily: 'var(--font-space-grotesk)' }}>
-            Oops...
-          </p>
-          <p className="text-white text-sm tracking-wide" style={{ fontFamily: 'var(--font-space-grotesk)' }}>
-            Evento no encontrado
-          </p>
-          <p className="text-[#6b7280] text-xs">
-            El código <span className="font-mono text-[#34D399]">{code}</span> no corresponde a ningún evento activo.
-          </p>
+          <p className="text-5xl text-gold opacity-50" style={{ fontFamily: 'var(--font-space-grotesk)' }}>Oops...</p>
+          <p className="text-white text-sm tracking-wide" style={{ fontFamily: 'var(--font-space-grotesk)' }}>Evento no encontrado</p>
+          <p className="text-[#6b7280] text-xs">El código <span className="font-mono text-[#34D399]">{code}</span> no corresponde a ningún evento activo.</p>
         </div>
       </div>
     )
@@ -122,15 +170,13 @@ export default function GuestPage({ params }: { params: Promise<{ code: string }
         <div className="card-dark p-10 text-center max-w-sm w-full glow-gold space-y-4">
           <p className="text-5xl text-gold" style={{ fontFamily: 'var(--font-space-grotesk)' }}>{event.name}</p>
           <div className="divider-gold mx-auto w-24" />
-          <p className="text-[#9ca3af] text-sm" style={{ fontFamily: 'var(--font-space-grotesk)', fontStyle: 'italic' }}>
-            Este evento ya no está recibiendo fotos.
-          </p>
+          <p className="text-[#9ca3af] text-sm" style={{ fontFamily: 'var(--font-space-grotesk)', fontStyle: 'italic' }}>Este evento ya no está recibiendo fotos.</p>
         </div>
       </div>
     )
   }
 
-  // ── Time window check ────────────────────────────────────────────────────
+  // ── Time window ──────────────────────────────────────────────────────────
   const uploadStatus = getUploadStatus(event.date)
 
   if (uploadStatus === 'too_early') {
@@ -140,18 +186,12 @@ export default function GuestPage({ params }: { params: Promise<{ code: string }
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[400px] h-[300px] bg-[#34D399]/5 blur-[120px] pointer-events-none" />
         <div className="relative z-10 flex flex-col items-center gap-2 mb-8">
           <Image src="/logo.png" alt="Total Pics" width={48} height={48} unoptimized className="drop-shadow-[0_0_12px_rgba(52,211,153,0.3)]" />
-          <p className="text-sm font-black tracking-widest uppercase text-white" style={{ fontFamily: 'var(--font-exo2)' }}>
-            TOTAL <span className="text-[#34D399]">PICS</span>
-          </p>
+          <p className="text-sm font-black tracking-widest uppercase text-white" style={{ fontFamily: 'var(--font-exo2)' }}>TOTAL <span className="text-[#34D399]">PICS</span></p>
         </div>
         <div className="relative z-10 card-dark p-8 w-full max-w-sm glow-gold text-center space-y-5">
-          <div className="w-14 h-14 rounded-2xl bg-[#34D399]/10 border border-[#34D399]/20 flex items-center justify-center mx-auto text-2xl">
-            🕐
-          </div>
+          <div className="w-14 h-14 rounded-2xl bg-[#34D399]/10 border border-[#34D399]/20 flex items-center justify-center mx-auto text-2xl">🕐</div>
           <div>
-            <h1 className="text-white font-black text-xl uppercase tracking-wide" style={{ fontFamily: 'var(--font-exo2)' }}>
-              {event.name}
-            </h1>
+            <h1 className="text-white font-black text-xl uppercase tracking-wide" style={{ fontFamily: 'var(--font-exo2)' }}>{event.name}</h1>
             <div className="divider-gold mx-auto w-20 mt-3" />
           </div>
           <p className="text-white font-semibold tracking-wide text-sm">El evento aún no comenzó</p>
@@ -174,24 +214,16 @@ export default function GuestPage({ params }: { params: Promise<{ code: string }
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[400px] h-[300px] bg-[#34D399]/5 blur-[120px] pointer-events-none" />
         <div className="relative z-10 flex flex-col items-center gap-2 mb-8">
           <Image src="/logo.png" alt="Total Pics" width={48} height={48} unoptimized className="drop-shadow-[0_0_12px_rgba(52,211,153,0.3)]" />
-          <p className="text-sm font-black tracking-widest uppercase text-white" style={{ fontFamily: 'var(--font-exo2)' }}>
-            TOTAL <span className="text-[#34D399]">PICS</span>
-          </p>
+          <p className="text-sm font-black tracking-widest uppercase text-white" style={{ fontFamily: 'var(--font-exo2)' }}>TOTAL <span className="text-[#34D399]">PICS</span></p>
         </div>
         <div className="relative z-10 card-dark p-8 w-full max-w-sm glow-gold text-center space-y-5">
-          <div className="w-14 h-14 rounded-2xl bg-[#34D399]/10 border border-[#34D399]/20 flex items-center justify-center mx-auto text-2xl">
-            ✦
-          </div>
+          <div className="w-14 h-14 rounded-2xl bg-[#34D399]/10 border border-[#34D399]/20 flex items-center justify-center mx-auto text-2xl">✦</div>
           <div>
-            <h1 className="text-white font-black text-xl uppercase tracking-wide" style={{ fontFamily: 'var(--font-exo2)' }}>
-              {event.name}
-            </h1>
+            <h1 className="text-white font-black text-xl uppercase tracking-wide" style={{ fontFamily: 'var(--font-exo2)' }}>{event.name}</h1>
             <div className="divider-gold mx-auto w-20 mt-3" />
           </div>
           <p className="text-white font-semibold tracking-wide text-sm">El evento ya finalizó</p>
-          <p className="text-[#9ca3af] text-xs leading-relaxed" style={{ fontStyle: 'italic' }}>
-            Gracias por haber participado.<br />Las fotos quedaron guardadas para siempre.
-          </p>
+          <p className="text-[#9ca3af] text-xs leading-relaxed" style={{ fontStyle: 'italic' }}>Gracias por haber participado.<br />Las fotos quedaron guardadas para siempre.</p>
         </div>
         <p className="relative z-10 text-[#374151] text-xs tracking-wider mt-6">Total Pics · {event.code}</p>
       </div>
@@ -204,19 +236,10 @@ export default function GuestPage({ params }: { params: Promise<{ code: string }
       <div className="min-h-screen bg-[#080808] flex items-center justify-center p-4 relative overflow-hidden">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] rounded-full bg-[#34D399]/8 blur-[100px] pointer-events-none" />
         <div className="relative z-10 card-dark p-10 text-center max-w-sm w-full glow-gold space-y-5">
-          <p className="text-6xl text-gold" style={{ fontFamily: 'var(--font-space-grotesk)' }}>
-            ¡Gracias!
-          </p>
+          <p className="text-6xl text-gold" style={{ fontFamily: 'var(--font-space-grotesk)' }}>¡Gracias!</p>
           <div className="divider-gold mx-auto w-32" />
-          <p className="text-white text-sm tracking-wide" style={{ fontFamily: 'var(--font-space-grotesk)', fontStyle: 'italic' }}>
-            Tus fotos ya están en el slideshow del evento
-          </p>
-          <button
-            onClick={() => setSuccess(false)}
-            className="btn-gold w-full py-3 rounded-xl text-xs tracking-widest uppercase mt-2"
-          >
-            Subir más fotos
-          </button>
+          <p className="text-white text-sm tracking-wide" style={{ fontFamily: 'var(--font-space-grotesk)', fontStyle: 'italic' }}>Tus fotos ya están en el slideshow del evento</p>
+          <button onClick={() => setSuccess(false)} className="btn-gold w-full py-3 rounded-xl text-xs tracking-widest uppercase mt-2">Subir más fotos</button>
         </div>
       </div>
     )
@@ -225,10 +248,8 @@ export default function GuestPage({ params }: { params: Promise<{ code: string }
   // ── Upload form ──────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-[#080808] flex flex-col items-center py-10 px-4 relative overflow-hidden">
-      {/* Background glow */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[400px] h-[300px] bg-[#34D399]/5 blur-[120px] pointer-events-none" />
 
-      {/* Brand header */}
       <div className="relative z-10 flex flex-col items-center gap-2 mb-8">
         <Image src="/logo.png" alt="Total Pics" width={52} height={52} unoptimized className="drop-shadow-[0_0_12px_rgba(52,211,153,0.3)]" />
         <p className="text-base font-black tracking-widest uppercase text-white" style={{ fontFamily: 'var(--font-exo2)' }}>
@@ -236,11 +257,8 @@ export default function GuestPage({ params }: { params: Promise<{ code: string }
         </p>
       </div>
 
-      {/* Event name */}
       <div className="relative z-10 text-center mb-6 space-y-2">
-        <h1 className="text-white text-xl" style={{ fontFamily: 'var(--font-space-grotesk)', fontStyle: 'italic' }}>
-          {event.name}
-        </h1>
+        <h1 className="text-white text-xl" style={{ fontFamily: 'var(--font-space-grotesk)', fontStyle: 'italic' }}>{event.name}</h1>
         {event.description && <p className="text-[#9ca3af] text-sm">{event.description}</p>}
         <p className="text-[#6b7280] text-xs tracking-wide">
           {new Date(event.date).toLocaleDateString('es-AR', { day: 'numeric', month: 'long', year: 'numeric' })}
@@ -248,46 +266,29 @@ export default function GuestPage({ params }: { params: Promise<{ code: string }
         <div className="divider-gold mx-auto w-32 mt-1" />
       </div>
 
-      {/* Form card */}
       <div className="relative z-10 card-dark p-6 w-full max-w-md glow-gold space-y-5">
 
-        {/* Name input */}
         <div>
-          <label className="block text-xs text-[#34D399]/60 mb-1.5 tracking-widest uppercase">
-            Tu nombre (opcional)
-          </label>
+          <label className="block text-xs text-[#34D399]/60 mb-1.5 tracking-widest uppercase">Tu nombre (opcional)</label>
           <input
-            type="text"
-            value={uploaderName}
+            type="text" value={uploaderName}
             onChange={e => setUploaderName(e.target.value)}
-            className="input-dark text-sm"
-            placeholder="¿Cómo te llamás?"
+            className="input-dark text-sm" placeholder="¿Cómo te llamás?"
           />
         </div>
 
-        {/* File picker */}
         <div>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            onChange={handleFileSelect}
-            className="hidden"
-            id="file-input"
-          />
+          <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileSelect} className="hidden" id="file-input" />
           <label
             htmlFor="file-input"
             className="flex flex-col items-center justify-center border-2 border-dashed border-[#1f2937] hover:border-[#34D399]/50 rounded-2xl p-6 cursor-pointer transition-colors hover:bg-[#34D399]/5 group"
           >
             <span className="text-gold text-2xl mb-2 group-hover:scale-110 transition-transform" style={{ fontFamily: 'var(--font-space-grotesk)' }}>✦</span>
-            <p className="text-white text-sm font-medium tracking-wide" style={{ fontFamily: 'var(--font-space-grotesk)' }}>
-              Seleccionar foto
-            </p>
+            <p className="text-white text-sm font-medium tracking-wide" style={{ fontFamily: 'var(--font-space-grotesk)' }}>Seleccionar foto</p>
             <p className="text-[#6b7280] text-xs mt-1">Una foto por vez</p>
           </label>
         </div>
 
-        {/* Previews */}
         {previews.length > 0 && (
           <div>
             <p className="text-xs text-[#34D399]/60 mb-2 tracking-widest uppercase">
@@ -301,9 +302,7 @@ export default function GuestPage({ params }: { params: Promise<{ code: string }
                   <button
                     onClick={() => removeFile(i)}
                     className="absolute top-1 right-1 bg-[#080808]/80 border border-[#1f2937] text-[#34D399] rounded-full w-5 h-5 text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    ×
-                  </button>
+                  >×</button>
                 </div>
               ))}
             </div>
@@ -311,29 +310,27 @@ export default function GuestPage({ params }: { params: Promise<{ code: string }
         )}
 
         {error && (
-          <div className="border border-red-900/40 bg-red-900/10 text-red-400 rounded-xl px-4 py-3 text-sm text-center">
-            {error}
-          </div>
+          <div className="border border-red-900/40 bg-red-900/10 text-red-400 rounded-xl px-4 py-3 text-sm text-center">{error}</div>
         )}
 
         <div className="divider-gold opacity-30" />
 
         <button
           onClick={handleUpload}
-          disabled={uploading || selectedFiles.length === 0}
+          disabled={uploading || analyzing || selectedFiles.length === 0}
           className="btn-gold w-full py-4 rounded-2xl text-sm tracking-widest uppercase"
         >
           {uploading
             ? 'Subiendo...'
-            : selectedFiles.length > 0
-              ? `Subir ${selectedFiles.length} foto${selectedFiles.length !== 1 ? 's' : ''}`
-              : 'Subir fotos'}
+            : analyzing
+              ? 'Analizando imagen...'
+              : selectedFiles.length > 0
+                ? `Subir ${selectedFiles.length} foto${selectedFiles.length !== 1 ? 's' : ''}`
+                : 'Subir fotos'}
         </button>
       </div>
 
-      <p className="relative z-10 text-[#374151] text-xs tracking-wider mt-6">
-        Total Pics · {event.code}
-      </p>
+      <p className="relative z-10 text-[#374151] text-xs tracking-wider mt-6">Total Pics · {event.code}</p>
     </div>
   )
 }

@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { uploadBufferToDrive, refreshTokenIfNeeded } from '@/lib/google-drive'
-import { isSafeImage } from '@/lib/nsfw'
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -79,18 +78,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         })
     )
 
-    // Run NSFW checks in parallel (only if enabled for this event)
-    let safeImages = imageFiles
-    if (event.nsfwFilter) {
-      const safeFlags = await Promise.all(imageFiles.map(({ buffer }) => isSafeImage(buffer)))
-      safeImages = imageFiles.filter((_, i) => {
-        if (!safeFlags[i]) console.warn('[nsfw] imagen rechazada')
-        return safeFlags[i]
-      })
-      if (safeImages.length === 0) {
-        return NextResponse.json({ error: 'Las fotos no cumplen con las políticas de contenido del evento.' }, { status: 422 })
-      }
-    }
+    const safeImages = imageFiles
 
     // Upload safe images to Drive in parallel
     const saved = await Promise.all(
