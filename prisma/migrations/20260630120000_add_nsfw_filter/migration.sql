@@ -1,0 +1,1 @@
+ALTER TABLE "Event" ADD COLUMN "nsfwFilter" BOOLEAN NOT NULL DEFAULT true;

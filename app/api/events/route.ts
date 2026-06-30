@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
   if (!admin.isSuperAdmin) return NextResponse.json({ error: 'Sin permisos para crear eventos' }, { status: 403 })
 
   try {
-    const { name, description, date, slideshowInterval, clientId } = await req.json()
+    const { name, description, date, slideshowInterval, clientId, nsfwFilter } = await req.json()
 
     if (!name || !date) {
       return NextResponse.json({ error: 'Nombre y fecha requeridos' }, { status: 400 })
@@ -51,6 +51,7 @@ export async function POST(req: NextRequest) {
         adminId: admin.id,
         slideshowInterval: slideshowInterval || 5,
         clientId: clientId || null,
+        nsfwFilter: nsfwFilter !== false,
       },
     })
 

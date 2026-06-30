@@ -8,7 +8,7 @@ interface Client { id: string; name: string; email: string }
 
 export default function NewEventPage() {
   const router = useRouter()
-  const [form, setForm] = useState({ name: '', description: '', date: '', slideshowInterval: 5, clientId: '' })
+  const [form, setForm] = useState({ name: '', description: '', date: '', slideshowInterval: 5, clientId: '', nsfwFilter: true })
   const [clients, setClients] = useState<Client[]>([])
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -30,6 +30,7 @@ export default function NewEventPage() {
         body: JSON.stringify({
           ...form,
           clientId: form.clientId || undefined,
+          nsfwFilter: form.nsfwFilter,
         }),
       })
       const data = await res.json()
@@ -104,6 +105,24 @@ export default function NewEventPage() {
                 <span className="text-white font-semibold w-14 text-right text-sm" style={{ fontFamily: 'var(--font-space-grotesk)' }}>{form.slideshowInterval}s</span>
               </div>
             </div>
+
+            <div className="divider-gold opacity-30" />
+
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs text-[#34D399]/70 tracking-widest uppercase mb-0.5">Filtro de contenido</p>
+                <p className="text-[#6b7280] text-xs">Rechaza automáticamente fotos con contenido inapropiado</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setForm(f => ({ ...f, nsfwFilter: !f.nsfwFilter }))}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors shrink-0 ml-4 ${form.nsfwFilter ? 'bg-[#34D399]' : 'bg-[#1f2937]'}`}
+              >
+                <span className={`inline-block h-4 w-4 rounded-full bg-[#080808] transition-transform ${form.nsfwFilter ? 'translate-x-6' : 'translate-x-1'}`} />
+              </button>
+            </div>
+
+            <div className="divider-gold opacity-30" />
 
             {clients.length > 0 && (
               <div>

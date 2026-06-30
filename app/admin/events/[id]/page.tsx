@@ -11,7 +11,7 @@ interface Photo {
 }
 interface Event {
   id: string; name: string; description: string | null; date: string; code: string
-  isActive: boolean; slideshowInterval: number; photos: Photo[]
+  isActive: boolean; slideshowInterval: number; nsfwFilter: boolean; photos: Photo[]
   driveFolderId: string | null; driveFolderUrl: string | null
   googleAccessToken: string | null
   _count: { photos: number }
@@ -83,6 +83,15 @@ function EventPageContent({ id }: { id: string }) {
     })
     setSaving(false)
     if (event) setEvent({ ...event, slideshowInterval: slideInterval })
+  }
+
+  async function toggleNsfwFilter() {
+    if (!event) return
+    const res = await fetch(`/api/events/${id}`, {
+      method: 'PUT', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nsfwFilter: !event.nsfwFilter }),
+    })
+    if (res.ok) setEvent({ ...event, nsfwFilter: !event.nsfwFilter })
   }
 
   async function toggleActive() {
@@ -243,6 +252,22 @@ function EventPageContent({ id }: { id: string }) {
                 {saving ? 'Guardando...' : 'Guardar'}
               </button>
             </div>
+            <div className="divider-gold opacity-30" />
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs text-[#34D399]/60 tracking-widest uppercase">Filtro de contenido</p>
+                <p className="text-[#9ca3af] text-xs mt-0.5">
+                  {event.nsfwFilter ? 'Rechaza fotos inapropiadas automáticamente' : 'Sin filtro — se aceptan todas las fotos'}
+                </p>
+              </div>
+              <button
+                onClick={toggleNsfwFilter}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors shrink-0 ml-4 ${event.nsfwFilter ? 'bg-[#34D399]' : 'bg-[#1f2937]'}`}
+              >
+                <span className={`inline-block h-4 w-4 rounded-full bg-[#080808] transition-transform ${event.nsfwFilter ? 'translate-x-6' : 'translate-x-1'}`} />
+              </button>
+            </div>
+
             {isSuperAdmin && (
               <>
                 <div className="divider-gold opacity-30" />

@@ -41,7 +41,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 
   try {
     const body = await req.json()
-    const { name, description, date, slideshowInterval, isActive, clientId } = body
+    const { name, description, date, slideshowInterval, isActive, clientId, nsfwFilter } = body
 
     const updated = await prisma.event.update({
       where: { id },
@@ -53,6 +53,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         // Only super admin can change active status and client assignment
         ...(admin.isSuperAdmin && isActive !== undefined && { isActive }),
         ...(admin.isSuperAdmin && clientId !== undefined && { clientId: clientId || null }),
+        ...(nsfwFilter !== undefined && { nsfwFilter }),
       },
     })
 

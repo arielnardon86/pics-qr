@@ -79,15 +79,17 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         })
     )
 
-    // Run NSFW checks in parallel
-    const safeFlags = await Promise.all(imageFiles.map(({ buffer }) => isSafeImage(buffer)))
-    const safeImages = imageFiles.filter((_, i) => {
-      if (!safeFlags[i]) console.warn('[nsfw] imagen rechazada')
-      return safeFlags[i]
-    })
-
-    if (safeImages.length === 0) {
-      return NextResponse.json({ error: 'Las fotos no cumplen con las políticas de contenido del evento.' }, { status: 422 })
+    // Run NSFW checks in parallel (only if enabled for this event)
+    let safeImages = imageFiles
+    if (event.nsfwFilter) {
+      const safeFlags = await Promise.all(imageFiles.map(({ buffer }) => isSafeImage(buffer)))
+      safeImages = imageFiles.filter((_, i) => {
+        if (!safeFlags[i]) console.warn('[nsfw] imagen rechazada')
+        return safeFlags[i]
+      })
+      if (safeImages.length === 0) {
+        return NextResponse.json({ error: 'Las fotos no cumplen con las políticas de contenido del evento.' }, { status: 422 })
+      }
     }
 
     // Upload safe images to Drive in parallel
