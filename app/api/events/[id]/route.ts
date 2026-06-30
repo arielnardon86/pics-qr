@@ -16,6 +16,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     include: {
       photos: { orderBy: { createdAt: 'asc' } },
       _count: { select: { photos: true } },
+      admin: { select: { logoUrl: true } },
       client: { select: { id: true, name: true, email: true, logoUrl: true } },
     },
   })

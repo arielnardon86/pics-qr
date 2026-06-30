@@ -9,6 +9,7 @@ interface Photo {
 }
 interface EventData {
   id: string; name: string; slideshowInterval: number
+  admin: { logoUrl: string | null } | null
   client: { logoUrl: string | null } | null
 }
 
@@ -31,7 +32,7 @@ export default function SlideshowPage({ params }: { params: Promise<{ id: string
       ])
       if (eventRes.ok) {
         const data = await eventRes.json()
-        setEvent({ id: data.event.id, name: data.event.name, slideshowInterval: data.event.slideshowInterval, client: data.event.client ?? null })
+        setEvent({ id: data.event.id, name: data.event.name, slideshowInterval: data.event.slideshowInterval, admin: data.event.admin ?? null, client: data.event.client ?? null })
       }
       if (photosRes.ok) setPhotos((await photosRes.json()).photos)
       setLoading(false)
@@ -132,10 +133,10 @@ export default function SlideshowPage({ params }: { params: Promise<{ id: string
       </div>
 
       {/* Client logo watermark — always visible, top-right */}
-      {event?.client?.logoUrl && (
+      {(event?.client?.logoUrl ?? event?.admin?.logoUrl) && (
         // eslint-disable-next-line @next/next/no-img-element
         <img
-          src={event.client.logoUrl}
+          src={(event.client?.logoUrl ?? event.admin?.logoUrl)!}
           alt="Logo"
           className="absolute top-5 right-6 z-30 h-12 w-auto object-contain opacity-80 pointer-events-none"
           style={{ filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.6))' }}
