@@ -138,8 +138,8 @@ export default function SlideshowPage({ params }: { params: Promise<{ id: string
         <img
           src={(event.client?.logoUrl ?? event.admin?.logoUrl)!}
           alt="Logo"
-          className="absolute top-5 right-6 z-30 h-12 w-auto object-contain opacity-80 pointer-events-none"
-          style={{ filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.6))' }}
+          className="absolute top-5 right-[38%] z-30 h-12 w-auto object-contain opacity-85 pointer-events-none"
+          style={{ filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.8))' }}
         />
       )}
 
