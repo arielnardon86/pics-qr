@@ -41,7 +41,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 
   try {
     const body = await req.json()
-    const { name, description, date, slideshowInterval, isActive, clientId, nsfwFilter } = body
+    const { name, description, date, slideshowInterval, isActive, clientId, nsfwFilter, uploadsPaused } = body
 
     const updated = await prisma.event.update({
       where: { id },
@@ -54,6 +54,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         ...(admin.isSuperAdmin && isActive !== undefined && { isActive }),
         ...(admin.isSuperAdmin && clientId !== undefined && { clientId: clientId || null }),
         ...(nsfwFilter !== undefined && { nsfwFilter }),
+        ...(uploadsPaused !== undefined && { uploadsPaused }),
       },
     })
 

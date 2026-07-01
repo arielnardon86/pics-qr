@@ -15,6 +15,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ code
       isActive: true,
       slideshowInterval: true,
       nsfwFilter: true,
+      uploadsPaused: true,
     },
   })
 

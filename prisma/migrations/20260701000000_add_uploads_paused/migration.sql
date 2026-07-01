@@ -1,0 +1,1 @@
+ALTER TABLE "Event" ADD COLUMN "uploadsPaused" BOOLEAN NOT NULL DEFAULT false;

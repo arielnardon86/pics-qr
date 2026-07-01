@@ -22,6 +22,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   const event = await prisma.event.findUnique({ where: { id } })
   if (!event) return NextResponse.json({ error: 'Evento no encontrado' }, { status: 404 })
   if (!event.isActive) return NextResponse.json({ error: 'El evento no está activo' }, { status: 403 })
+  if (event.uploadsPaused) return NextResponse.json({ error: 'Las subidas están pausadas por el momento.' }, { status: 503 })
 
   const now = Date.now()
   const eventTime = new Date(event.date).getTime()

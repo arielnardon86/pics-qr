@@ -6,7 +6,7 @@ import { getSocket } from '@/lib/socket-client'
 
 interface EventData {
   id: string; name: string; description: string | null; date: string
-  code: string; isActive: boolean; nsfwFilter: boolean
+  code: string; isActive: boolean; nsfwFilter: boolean; uploadsPaused: boolean
 }
 
 // Module-level singleton — model survives re-renders and is shared across instances
@@ -176,7 +176,33 @@ export default function GuestPage({ params }: { params: Promise<{ code: string }
     )
   }
 
-  // ── Time window ──────────────────────────────────────────────────────────
+  // ── Uploads paused ───────────────────────────────────────────────────────
+  if (event.uploadsPaused) {
+    return (
+      <div className="min-h-screen bg-[#080808] flex flex-col items-center justify-center p-6 relative overflow-hidden">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[400px] h-[300px] bg-amber-400/5 blur-[120px] pointer-events-none" />
+        <div className="relative z-10 flex flex-col items-center gap-2 mb-8">
+          <Image src="/logo.png" alt="Total Pics" width={48} height={48} unoptimized className="drop-shadow-[0_0_12px_rgba(52,211,153,0.3)]" />
+          <p className="text-sm font-black tracking-widest uppercase text-white" style={{ fontFamily: 'var(--font-exo2)' }}>TOTAL <span className="text-[#34D399]">PICS</span></p>
+        </div>
+        <div className="relative z-10 card-dark p-8 w-full max-w-sm text-center space-y-5" style={{ borderColor: '#92400e33' }}>
+          <div className="w-14 h-14 rounded-2xl bg-amber-400/10 border border-amber-400/20 flex items-center justify-center mx-auto text-2xl">⏸</div>
+          <div>
+            <h1 className="text-white font-black text-xl uppercase tracking-wide" style={{ fontFamily: 'var(--font-exo2)' }}>{event.name}</h1>
+            <div className="h-px bg-amber-400/20 mx-auto w-20 mt-3" />
+          </div>
+          <p className="text-white font-semibold tracking-wide text-sm">Subidas pausadas</p>
+          <p className="text-[#9ca3af] text-xs leading-relaxed">
+            El organizador pausó temporalmente la subida de fotos.<br />
+            <span className="text-amber-400/80">Volvé a intentarlo en unos minutos.</span>
+          </p>
+        </div>
+        <p className="relative z-10 text-[#374151] text-xs tracking-wider mt-6">Total Pics · {event.code}</p>
+      </div>
+    )
+  }
+
+  // ── Time window ───────────────────────────────────────────────────────────
   const uploadStatus = getUploadStatus(event.date)
 
   if (uploadStatus === 'too_early') {

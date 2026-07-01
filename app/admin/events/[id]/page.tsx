@@ -11,7 +11,8 @@ interface Photo {
 }
 interface Event {
   id: string; name: string; description: string | null; date: string; code: string
-  isActive: boolean; slideshowInterval: number; nsfwFilter: boolean; photos: Photo[]
+  isActive: boolean; slideshowInterval: number; nsfwFilter: boolean; uploadsPaused: boolean
+  photos: Photo[]
   driveFolderId: string | null; driveFolderUrl: string | null
   googleAccessToken: string | null
   _count: { photos: number }
@@ -92,6 +93,23 @@ function EventPageContent({ id }: { id: string }) {
       body: JSON.stringify({ nsfwFilter: !event.nsfwFilter }),
     })
     if (res.ok) setEvent({ ...event, nsfwFilter: !event.nsfwFilter })
+  }
+
+  async function toggleUploadsPaused() {
+    if (!event) return
+    const res = await fetch(`/api/events/${id}`, {
+      method: 'PUT', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ uploadsPaused: !event.uploadsPaused }),
+    })
+    if (res.ok) {
+      setEvent({ ...event, uploadsPaused: !event.uploadsPaused })
+      showToast(event.uploadsPaused ? 'Subidas reactivadas ✓' : 'Subidas pausadas')
+    }
+  }
+
+  async function deletePhoto(photoId: string) {
+    const res = await fetch(`/api/events/${id}/photos/${photoId}`, { method: 'DELETE' })
+    if (res.ok) setEvent(e => e ? { ...e, photos: e.photos.filter(p => p.id !== photoId), _count: { photos: e._count.photos - 1 } } : e)
   }
 
   async function toggleActive() {
@@ -255,6 +273,22 @@ function EventPageContent({ id }: { id: string }) {
             <div className="divider-gold opacity-30" />
             <div className="flex items-center justify-between">
               <div>
+                <p className="text-xs text-[#34D399]/60 tracking-widest uppercase">Subida de fotos</p>
+                <p className="text-[#9ca3af] text-xs mt-0.5">
+                  {event.uploadsPaused ? 'Pausada — los invitados no pueden subir' : 'Activa — los invitados pueden subir'}
+                </p>
+              </div>
+              <button
+                onClick={toggleUploadsPaused}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors shrink-0 ml-4 ${event.uploadsPaused ? 'bg-amber-500/80' : 'bg-[#34D399]'}`}
+              >
+                <span className={`inline-block h-4 w-4 rounded-full bg-[#080808] transition-transform ${event.uploadsPaused ? 'translate-x-1' : 'translate-x-6'}`} />
+              </button>
+            </div>
+
+            <div className="divider-gold opacity-30" />
+            <div className="flex items-center justify-between">
+              <div>
                 <p className="text-xs text-[#34D399]/60 tracking-widest uppercase">Filtro de contenido</p>
                 <p className="text-[#9ca3af] text-xs mt-0.5">
                   {event.nsfwFilter ? 'Rechaza fotos inapropiadas automáticamente' : 'Sin filtro — se aceptan todas las fotos'}
@@ -394,25 +428,26 @@ function EventPageContent({ id }: { id: string }) {
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
               {event.photos.map(photo => (
-                <a
-                  key={photo.id}
-                  href={photo.driveFileUrl || '#'}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="relative aspect-square rounded-xl overflow-hidden bg-[#111] group border border-[#1f2937]"
-                >
-                  <Image
-                    src={photo.path} alt={photo.filename} fill
-                    className="object-cover transition-transform duration-500 group-hover:scale-105"
-                    sizes="(max-width: 640px) 50vw, 20vw"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                  {photo.uploadedBy && (
-                    <div className="absolute bottom-0 inset-x-0 text-white text-xs px-2 py-1.5 opacity-0 group-hover:opacity-100 transition-opacity truncate" style={{ fontFamily: 'var(--font-space-grotesk)', fontStyle: 'italic' }}>
-                      {photo.uploadedBy}
-                    </div>
-                  )}
-                </a>
+                <div key={photo.id} className="relative aspect-square rounded-xl overflow-hidden bg-[#111] group border border-[#1f2937]">
+                  <a href={photo.driveFileUrl || '#'} target="_blank" rel="noopener noreferrer" className="block w-full h-full">
+                    <Image
+                      src={photo.path} alt={photo.filename} fill
+                      className="object-cover transition-transform duration-500 group-hover:scale-105"
+                      sizes="(max-width: 640px) 50vw, 20vw"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                    {photo.uploadedBy && (
+                      <div className="absolute bottom-0 inset-x-0 text-white text-xs px-2 py-1.5 opacity-0 group-hover:opacity-100 transition-opacity truncate" style={{ fontFamily: 'var(--font-space-grotesk)', fontStyle: 'italic' }}>
+                        {photo.uploadedBy}
+                      </div>
+                    )}
+                  </a>
+                  <button
+                    onClick={() => { if (confirm('¿Eliminar esta foto?')) deletePhoto(photo.id) }}
+                    className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-[#080808]/80 border border-red-900/40 text-red-400 hover:bg-red-900/60 hover:text-white text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all z-10"
+                    title="Eliminar foto"
+                  >✕</button>
+                </div>
               ))}
             </div>
           )}
