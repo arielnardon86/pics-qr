@@ -44,6 +44,12 @@ model Event {
   updatedAt          DateTime  @updatedAt
 }
 
+model Setting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+}
+
 model PaymentRequest {
   id             String   @id @default(cuid())
   adminId        String

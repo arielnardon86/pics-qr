@@ -7,6 +7,7 @@ import { getSocket } from '@/lib/socket-client'
 interface EventData {
   id: string; name: string; description: string | null; date: string
   code: string; isActive: boolean; nsfwFilter: boolean; uploadsPaused: boolean
+  uploadHoursBefore: number; uploadHoursAfter: number
 }
 
 // Module-level singleton — model survives re-renders and is shared across instances
@@ -133,11 +134,11 @@ export default function GuestPage({ params }: { params: Promise<{ code: string }
     }
   }
 
-  function getUploadStatus(eventDate: string): 'too_early' | 'open' | 'too_late' {
+  function getUploadStatus(eventDate: string, hoursBefore: number, hoursAfter: number): 'too_early' | 'open' | 'too_late' {
     const now = Date.now()
     const date = new Date(eventDate).getTime()
-    if (now < date - 24 * 60 * 60 * 1000) return 'too_early'
-    if (now > date + 48 * 60 * 60 * 1000) return 'too_late'
+    if (now < date - hoursBefore * 60 * 60 * 1000) return 'too_early'
+    if (now > date + hoursAfter  * 60 * 60 * 1000) return 'too_late'
     return 'open'
   }
 
@@ -203,10 +204,10 @@ export default function GuestPage({ params }: { params: Promise<{ code: string }
   }
 
   // ── Time window ───────────────────────────────────────────────────────────
-  const uploadStatus = getUploadStatus(event.date)
+  const uploadStatus = getUploadStatus(event.date, event.uploadHoursBefore ?? 24, event.uploadHoursAfter ?? 48)
 
   if (uploadStatus === 'too_early') {
-    const startsAt = new Date(new Date(event.date.slice(0, 10) + 'T12:00:00Z').getTime() - 24 * 60 * 60 * 1000)
+    const startsAt = new Date(new Date(event.date.slice(0, 10) + 'T12:00:00Z').getTime() - (event.uploadHoursBefore ?? 24) * 60 * 60 * 1000)
     return (
       <div className="min-h-screen bg-[#080808] flex flex-col items-center justify-center p-6 relative overflow-hidden">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[400px] h-[300px] bg-[#34D399]/5 blur-[120px] pointer-events-none" />

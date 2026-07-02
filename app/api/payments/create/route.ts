@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getAuthAdminFull } from '@/lib/auth'
-import { mpClient, MP_EVENT_PRICE } from '@/lib/mercadopago'
+import { mpClient } from '@/lib/mercadopago'
+import { getSettings } from '@/lib/settings'
 import { Preference } from 'mercadopago'
 
 export async function POST(req: NextRequest) {
@@ -19,6 +20,8 @@ export async function POST(req: NextRequest) {
   }
 
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
+  const s = await getSettings(['event_price'])
+  const price = Number(s.event_price) || 1
 
   try {
     const paymentRequest = await prisma.paymentRequest.create({
@@ -37,7 +40,7 @@ export async function POST(req: NextRequest) {
           id: 'event-creation',
           title: `Total Pics — ${eventName.trim()}`,
           quantity: 1,
-          unit_price: MP_EVENT_PRICE,
+          unit_price: price,
           currency_id: 'ARS',
         }],
         payer: { email: admin.email },

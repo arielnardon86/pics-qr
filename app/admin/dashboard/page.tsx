@@ -133,9 +133,14 @@ function DashboardContent() {
           </Link>
           <div className="flex items-center gap-5">
             {isSuperAdmin && (
-              <Link href="/admin/clients" className="text-xs text-[#34D399]/70 hover:text-white tracking-widest uppercase transition-colors">
-                Clientes
-              </Link>
+              <>
+                <Link href="/admin/clients" className="text-xs text-[#34D399]/70 hover:text-white tracking-widest uppercase transition-colors">
+                  Clientes
+                </Link>
+                <Link href="/admin/settings" className="text-xs text-[#34D399]/70 hover:text-white tracking-widest uppercase transition-colors">
+                  Config
+                </Link>
+              </>
             )}
             <span className="text-[#9ca3af] text-sm hidden sm:block">{admin?.name}</span>
             <button onClick={handleLogout} className="text-xs text-[#34D399]/60 hover:text-white tracking-widest uppercase transition-colors">Salir</button>

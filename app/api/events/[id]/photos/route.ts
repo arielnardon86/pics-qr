@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { uploadBufferToDrive, refreshTokenIfNeeded } from '@/lib/google-drive'
+import { getSettings } from '@/lib/settings'
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -26,9 +27,12 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
   const now = Date.now()
   const eventTime = new Date(event.date).getTime()
-  if (now < eventTime - 24 * 60 * 60 * 1000)
+  const s = await getSettings(['upload_hours_before', 'upload_hours_after'])
+  const msBefore = Number(s.upload_hours_before) * 60 * 60 * 1000
+  const msAfter  = Number(s.upload_hours_after)  * 60 * 60 * 1000
+  if (now < eventTime - msBefore)
     return NextResponse.json({ error: 'El evento aún no comenzó' }, { status: 403 })
-  if (now > eventTime + 48 * 60 * 60 * 1000)
+  if (now > eventTime + msAfter)
     return NextResponse.json({ error: 'El evento ya finalizó' }, { status: 403 })
   if (!event.driveFolderId) return NextResponse.json({ error: 'Este evento no tiene Google Drive configurado.' }, { status: 400 })
   if (!event.googleAccessToken) return NextResponse.json({ error: 'Cuenta de Google no conectada para este evento.' }, { status: 400 })
