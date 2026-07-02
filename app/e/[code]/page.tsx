@@ -206,7 +206,7 @@ export default function GuestPage({ params }: { params: Promise<{ code: string }
   const uploadStatus = getUploadStatus(event.date)
 
   if (uploadStatus === 'too_early') {
-    const startsAt = new Date(new Date(event.date).getTime() - 24 * 60 * 60 * 1000)
+    const startsAt = new Date(new Date(event.date.slice(0, 10) + 'T12:00:00Z').getTime() - 24 * 60 * 60 * 1000)
     return (
       <div className="min-h-screen bg-[#080808] flex flex-col items-center justify-center p-6 relative overflow-hidden">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[400px] h-[300px] bg-[#34D399]/5 blur-[120px] pointer-events-none" />
@@ -287,7 +287,7 @@ export default function GuestPage({ params }: { params: Promise<{ code: string }
         <h1 className="text-white text-xl" style={{ fontFamily: 'var(--font-space-grotesk)', fontStyle: 'italic' }}>{event.name}</h1>
         {event.description && <p className="text-[#9ca3af] text-sm">{event.description}</p>}
         <p className="text-[#6b7280] text-xs tracking-wide">
-          {new Date(event.date).toLocaleDateString('es-AR', { day: 'numeric', month: 'long', year: 'numeric' })}
+          {new Date(event.date.slice(0, 10) + 'T12:00:00').toLocaleDateString('es-AR', { day: 'numeric', month: 'long', year: 'numeric' })}
         </p>
         <div className="divider-gold mx-auto w-32 mt-1" />
       </div>
@@ -346,13 +346,7 @@ export default function GuestPage({ params }: { params: Promise<{ code: string }
           disabled={uploading || analyzing || selectedFiles.length === 0}
           className="btn-gold w-full py-4 rounded-2xl text-sm tracking-widest uppercase"
         >
-          {uploading
-            ? 'Subiendo...'
-            : analyzing
-              ? 'Analizando imagen...'
-              : selectedFiles.length > 0
-                ? `Subir ${selectedFiles.length} foto${selectedFiles.length !== 1 ? 's' : ''}`
-                : 'Subir fotos'}
+          {uploading ? 'Subiendo...' : analyzing ? 'Analizando imagen...' : 'Subir foto'}
         </button>
       </div>
 

@@ -208,7 +208,7 @@ function DashboardContent() {
                   <div className="flex-1 min-w-0">
                     <h3 className="text-white font-semibold text-lg leading-tight truncate" style={{ fontFamily: 'var(--font-space-grotesk)' }}>{event.name}</h3>
                     <p className="text-[#9ca3af] text-xs mt-1 tracking-wide">
-                      {new Date(event.date).toLocaleDateString('es-AR', { day: 'numeric', month: 'long', year: 'numeric' })}
+                      {new Date(event.date.slice(0, 10) + 'T12:00:00').toLocaleDateString('es-AR', { day: 'numeric', month: 'long', year: 'numeric' })}
                     </p>
                     {isSuperAdmin && event.client && (
                       <p className="text-[#34D399]/50 text-xs mt-1">Cliente: {event.client.name}</p>

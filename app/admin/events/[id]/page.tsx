@@ -248,7 +248,7 @@ function EventPageContent({ id }: { id: string }) {
             <div>
               <p className="text-xs text-[#34D399]/60 tracking-widest uppercase mb-1">Fecha</p>
               <p className="text-[#f1f5f9] text-sm" style={{ fontFamily: 'var(--font-space-grotesk)', fontStyle: 'italic' }}>
-                {new Date(event.date).toLocaleDateString('es-AR', { day: 'numeric', month: 'long', year: 'numeric' })}
+                {new Date(event.date.slice(0, 10) + 'T12:00:00').toLocaleDateString('es-AR', { day: 'numeric', month: 'long', year: 'numeric' })}
               </p>
             </div>
             <div className="divider-gold opacity-30" />

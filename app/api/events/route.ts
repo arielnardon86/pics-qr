@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
       data: {
         name,
         description,
-        date: new Date(date),
+        date: new Date(date + 'T12:00:00Z'),
         code,
         adminId: admin.id,
         slideshowInterval: slideshowInterval || 5,

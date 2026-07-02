@@ -48,7 +48,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       data: {
         ...(name && { name }),
         ...(description !== undefined && { description }),
-        ...(date && { date: new Date(date) }),
+        ...(date && { date: new Date(date + 'T12:00:00Z') }),
         ...(slideshowInterval && { slideshowInterval }),
         // Only super admin can change active status and client assignment
         ...(admin.isSuperAdmin && isActive !== undefined && { isActive }),
