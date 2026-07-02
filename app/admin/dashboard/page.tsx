@@ -44,8 +44,20 @@ function DashboardContent() {
   }, [router])
 
   useEffect(() => {
-    if (searchParams.get('google_error')) {
-      showToast(decodeURIComponent(searchParams.get('google_error')!), 'err')
+    const googleError = searchParams.get('google_error')
+    const paymentStatus = searchParams.get('payment')
+    if (googleError) {
+      showToast(decodeURIComponent(googleError), 'err')
+      window.history.replaceState({}, '', '/admin/dashboard')
+    }
+    if (paymentStatus === 'success') {
+      showToast('¡Evento creado! Configuralo conectando tu Google Drive.')
+      window.history.replaceState({}, '', '/admin/dashboard')
+    } else if (paymentStatus === 'pending') {
+      showToast('Pago en proceso. Te avisaremos cuando se confirme.', 'err')
+      window.history.replaceState({}, '', '/admin/dashboard')
+    } else if (paymentStatus === 'failed' || paymentStatus === 'error') {
+      showToast('El pago no se completó. Podés intentarlo nuevamente.', 'err')
       window.history.replaceState({}, '', '/admin/dashboard')
     }
   }, [searchParams])
@@ -181,9 +193,13 @@ function DashboardContent() {
             </h1>
             <div className="divider-gold w-24 mt-2" />
           </div>
-          {isSuperAdmin && (
+          {isSuperAdmin ? (
             <Link href="/admin/events/new" className="btn-gold px-6 py-2.5 rounded-xl text-xs tracking-widest uppercase">
               + Nuevo evento
+            </Link>
+          ) : (
+            <Link href="/admin/request-event" className="btn-gold px-6 py-2.5 rounded-xl text-xs tracking-widest uppercase">
+              + Solicitar evento
             </Link>
           )}
         </div>
@@ -194,10 +210,12 @@ function DashboardContent() {
               {isSuperAdmin ? 'Sin eventos aún' : 'Sin eventos asignados'}
             </p>
             <p className="text-[#6b7280] text-sm tracking-wide">
-              {isSuperAdmin ? 'Creá tu primer evento para empezar' : 'El administrador te asignará eventos próximamente'}
+              {isSuperAdmin ? 'Creá tu primer evento para empezar' : 'Solicitá tu primer evento para empezar'}
             </p>
-            {isSuperAdmin && (
+            {isSuperAdmin ? (
               <Link href="/admin/events/new" className="btn-gold inline-block px-8 py-3 rounded-xl text-xs tracking-widest uppercase mt-4">Crear evento</Link>
+            ) : (
+              <Link href="/admin/request-event" className="btn-gold inline-block px-8 py-3 rounded-xl text-xs tracking-widest uppercase mt-4">Solicitar evento</Link>
             )}
           </div>
         ) : (
