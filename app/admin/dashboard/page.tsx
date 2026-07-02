@@ -194,11 +194,11 @@ function DashboardContent() {
             <div className="divider-gold w-24 mt-2" />
           </div>
           {isSuperAdmin ? (
-            <Link href="/admin/events/new" className="btn-gold px-6 py-2.5 rounded-xl text-xs tracking-widest uppercase">
+            <Link href="/admin/events/new" className="btn-gold px-4 py-2 sm:px-6 sm:py-2.5 rounded-xl text-xs tracking-widest uppercase whitespace-nowrap">
               + Nuevo evento
             </Link>
           ) : (
-            <Link href="/admin/request-event" className="btn-gold px-6 py-2.5 rounded-xl text-xs tracking-widest uppercase">
+            <Link href="/admin/request-event" className="btn-gold px-4 py-2 sm:px-6 sm:py-2.5 rounded-xl text-xs tracking-widest uppercase whitespace-nowrap">
               + Solicitar evento
             </Link>
           )}
@@ -206,16 +206,14 @@ function DashboardContent() {
 
         {events.length === 0 ? (
           <div className="text-center py-24 space-y-4">
-            <p className="text-5xl text-gold opacity-40" style={{ fontFamily: 'var(--font-space-grotesk)' }}>
+            <p className="text-4xl sm:text-5xl text-gold opacity-40" style={{ fontFamily: 'var(--font-space-grotesk)' }}>
               {isSuperAdmin ? 'Sin eventos aún' : 'Sin eventos asignados'}
             </p>
             <p className="text-[#6b7280] text-sm tracking-wide">
-              {isSuperAdmin ? 'Creá tu primer evento para empezar' : 'Solicitá tu primer evento para empezar'}
+              {isSuperAdmin ? 'Creá tu primer evento para empezar' : 'Usá el botón de arriba para solicitar tu primer evento'}
             </p>
-            {isSuperAdmin ? (
+            {isSuperAdmin && (
               <Link href="/admin/events/new" className="btn-gold inline-block px-8 py-3 rounded-xl text-xs tracking-widest uppercase mt-4">Crear evento</Link>
-            ) : (
-              <Link href="/admin/request-event" className="btn-gold inline-block px-8 py-3 rounded-xl text-xs tracking-widest uppercase mt-4">Solicitar evento</Link>
             )}
           </div>
         ) : (
