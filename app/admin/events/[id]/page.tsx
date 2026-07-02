@@ -109,16 +109,8 @@ function EventPageContent({ id }: { id: string }) {
 
   async function deletePhoto(photoId: string) {
     const res = await fetch(`/api/events/${id}/photos/${photoId}`, { method: 'DELETE' })
-    if (res.ok) setEvent(e => e ? { ...e, photos: e.photos.filter(p => p.id !== photoId), _count: { photos: e._count.photos - 1 } } : e)
-  }
-
-  async function toggleActive() {
-    if (!event || !admin?.isSuperAdmin) return
-    const res = await fetch(`/api/events/${id}`, {
-      method: 'PUT', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ isActive: !event.isActive }),
-    })
-    if (res.ok) setEvent({ ...event, isActive: !event.isActive })
+    // Don't touch _count.photos — the file still lives in Google Drive
+    if (res.ok) setEvent(e => e ? { ...e, photos: e.photos.filter(p => p.id !== photoId) } : e)
   }
 
   async function copyLink() {
@@ -302,30 +294,6 @@ function EventPageContent({ id }: { id: string }) {
               </button>
             </div>
 
-            {isSuperAdmin && (
-              <>
-                <div className="divider-gold opacity-30" />
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs text-[#34D399]/60 tracking-widest uppercase">Recepción de fotos</p>
-                    <p className="text-[#9ca3af] text-xs mt-0.5">
-                      {!event.driveFolderId
-                        ? 'Requiere Drive configurado'
-                        : event.isActive
-                          ? 'Los invitados pueden subir fotos'
-                          : 'No se aceptan fotos nuevas'}
-                    </p>
-                  </div>
-                  <button
-                    onClick={toggleActive}
-                    disabled={!event.driveFolderId}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors disabled:opacity-40 ${event.isActive ? 'bg-[#34D399]' : 'bg-[#1f2937]'}`}
-                  >
-                    <span className={`inline-block h-4 w-4 rounded-full bg-[#080808] transition-transform ${event.isActive ? 'translate-x-6' : 'translate-x-1'}`} />
-                  </button>
-                </div>
-              </>
-            )}
           </div>
         </div>
 
