@@ -40,6 +40,8 @@ model Event {
   driveFolderUrl     String?
   nsfwFilter         Boolean   @default(true)
   uploadsPaused      Boolean   @default(false)
+  uploadHoursBefore  Int?
+  uploadHoursAfter   Int?
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
 }

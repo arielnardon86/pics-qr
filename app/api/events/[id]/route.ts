@@ -41,7 +41,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 
   try {
     const body = await req.json()
-    const { name, description, date, slideshowInterval, isActive, clientId, nsfwFilter, uploadsPaused } = body
+    const { name, description, date, slideshowInterval, isActive, clientId, nsfwFilter, uploadsPaused, uploadHoursBefore, uploadHoursAfter } = body
 
     const updated = await prisma.event.update({
       where: { id },
@@ -50,11 +50,12 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         ...(description !== undefined && { description }),
         ...(date && { date: new Date(date + 'T12:00:00Z') }),
         ...(slideshowInterval && { slideshowInterval }),
-        // Only super admin can change active status and client assignment
         ...(admin.isSuperAdmin && isActive !== undefined && { isActive }),
         ...(admin.isSuperAdmin && clientId !== undefined && { clientId: clientId || null }),
         ...(nsfwFilter !== undefined && { nsfwFilter }),
         ...(uploadsPaused !== undefined && { uploadsPaused }),
+        ...('uploadHoursBefore' in body && { uploadHoursBefore: uploadHoursBefore === null ? null : Number(uploadHoursBefore) }),
+        ...('uploadHoursAfter'  in body && { uploadHoursAfter:  uploadHoursAfter  === null ? null : Number(uploadHoursAfter) }),
       },
     })
 

@@ -12,6 +12,7 @@ interface Photo {
 interface Event {
   id: string; name: string; description: string | null; date: string; code: string
   isActive: boolean; slideshowInterval: number; nsfwFilter: boolean; uploadsPaused: boolean
+  uploadHoursBefore: number | null; uploadHoursAfter: number | null
   photos: Photo[]
   driveFolderId: string | null; driveFolderUrl: string | null
   googleAccessToken: string | null
@@ -31,6 +32,9 @@ function EventPageContent({ id }: { id: string }) {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [slideInterval, setSlideInterval] = useState(5)
+  const [hoursBefore, setHoursBefore] = useState<string>('')
+  const [hoursAfter, setHoursAfter] = useState<string>('')
+  const [savingHours, setSavingHours] = useState(false)
   const [copying, setCopying] = useState(false)
   const [driveLoading, setDriveLoading] = useState(false)
   const [toast, setToast] = useState<{ msg: string; type: 'ok' | 'err' } | null>(null)
@@ -53,6 +57,8 @@ function EventPageContent({ id }: { id: string }) {
       const eventData = await eventRes.json()
       setEvent(eventData.event)
       setSlideInterval(eventData.event.slideshowInterval)
+      setHoursBefore(eventData.event.uploadHoursBefore != null ? String(eventData.event.uploadHoursBefore) : '')
+      setHoursAfter(eventData.event.uploadHoursAfter != null ? String(eventData.event.uploadHoursAfter) : '')
       if (qrRes.ok) setQrData(await qrRes.json())
       if (meRes.ok) setAdmin((await meRes.json()).admin)
       if (googleRes.ok) setGoogleStatus(await googleRes.json())
@@ -84,6 +90,21 @@ function EventPageContent({ id }: { id: string }) {
     })
     setSaving(false)
     if (event) setEvent({ ...event, slideshowInterval: slideInterval })
+  }
+
+  async function saveUploadHours() {
+    setSavingHours(true)
+    const before = hoursBefore === '' ? null : Number(hoursBefore)
+    const after  = hoursAfter  === '' ? null : Number(hoursAfter)
+    const res = await fetch(`/api/events/${id}`, {
+      method: 'PUT', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ uploadHoursBefore: before, uploadHoursAfter: after }),
+    })
+    if (res.ok) {
+      setEvent(e => e ? { ...e, uploadHoursBefore: before, uploadHoursAfter: after } : e)
+      showToast('Ventana de tiempo guardada ✓')
+    }
+    setSavingHours(false)
   }
 
   async function toggleNsfwFilter() {
@@ -262,6 +283,35 @@ function EventPageContent({ id }: { id: string }) {
                 {saving ? 'Guardando...' : 'Guardar'}
               </button>
             </div>
+            <div className="divider-gold opacity-30" />
+            <div>
+              <p className="text-xs text-[#34D399]/60 tracking-widest uppercase mb-1">Ventana de uso del QR</p>
+              <p className="text-[#6b7280] text-xs mb-3">Dejá vacío para usar la configuración global.</p>
+              <div className="grid grid-cols-2 gap-3 mb-3">
+                <div>
+                  <label className="block text-[10px] tracking-widest uppercase text-[#6b7280] mb-1">Horas antes</label>
+                  <input
+                    type="number" min="0" max="168" placeholder="Global"
+                    value={hoursBefore}
+                    onChange={e => setHoursBefore(e.target.value)}
+                    className="w-full bg-[#0f172a] border border-[#1f2937] focus:border-[#34D399]/50 rounded-lg px-3 py-2 text-white text-sm outline-none transition-colors placeholder-[#374151]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] tracking-widest uppercase text-[#6b7280] mb-1">Horas después</label>
+                  <input
+                    type="number" min="0" max="168" placeholder="Global"
+                    value={hoursAfter}
+                    onChange={e => setHoursAfter(e.target.value)}
+                    className="w-full bg-[#0f172a] border border-[#1f2937] focus:border-[#34D399]/50 rounded-lg px-3 py-2 text-white text-sm outline-none transition-colors placeholder-[#374151]"
+                  />
+                </div>
+              </div>
+              <button onClick={saveUploadHours} disabled={savingHours} className="text-xs btn-gold px-4 py-1.5 rounded-lg disabled:opacity-40">
+                {savingHours ? 'Guardando...' : 'Guardar'}
+              </button>
+            </div>
+
             <div className="divider-gold opacity-30" />
             <div className="flex items-center justify-between">
               <div>

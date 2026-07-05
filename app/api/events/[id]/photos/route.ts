@@ -28,8 +28,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   const now = Date.now()
   const eventTime = new Date(event.date).getTime()
   const s = await getSettings(['upload_hours_before', 'upload_hours_after'])
-  const msBefore = Number(s.upload_hours_before) * 60 * 60 * 1000
-  const msAfter  = Number(s.upload_hours_after)  * 60 * 60 * 1000
+  const msBefore = (event.uploadHoursBefore ?? Number(s.upload_hours_before)) * 60 * 60 * 1000
+  const msAfter  = (event.uploadHoursAfter  ?? Number(s.upload_hours_after))  * 60 * 60 * 1000
   if (now < eventTime - msBefore)
     return NextResponse.json({ error: 'El evento aún no comenzó' }, { status: 403 })
   if (now > eventTime + msAfter)

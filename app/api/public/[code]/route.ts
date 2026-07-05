@@ -17,6 +17,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ code
       slideshowInterval: true,
       nsfwFilter: true,
       uploadsPaused: true,
+      uploadHoursBefore: true,
+      uploadHoursAfter: true,
     },
   })
 
@@ -26,8 +28,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ code
   return NextResponse.json({
     event: {
       ...event,
-      uploadHoursBefore: Number(s.upload_hours_before),
-      uploadHoursAfter:  Number(s.upload_hours_after),
+      uploadHoursBefore: event.uploadHoursBefore ?? Number(s.upload_hours_before),
+      uploadHoursAfter:  event.uploadHoursAfter  ?? Number(s.upload_hours_after),
     },
   })
 }
