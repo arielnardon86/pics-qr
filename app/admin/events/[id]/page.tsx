@@ -283,34 +283,38 @@ function EventPageContent({ id }: { id: string }) {
                 {saving ? 'Guardando...' : 'Guardar'}
               </button>
             </div>
-            <div className="divider-gold opacity-30" />
-            <div>
-              <p className="text-xs text-[#34D399]/60 tracking-widest uppercase mb-1">Ventana de uso del QR</p>
-              <p className="text-[#6b7280] text-xs mb-3">Dejá vacío para usar la configuración global.</p>
-              <div className="grid grid-cols-2 gap-3 mb-3">
+            {isSuperAdmin && (
+              <>
+                <div className="divider-gold opacity-30" />
                 <div>
-                  <label className="block text-[10px] tracking-widest uppercase text-[#6b7280] mb-1">Horas antes</label>
-                  <input
-                    type="number" min="0" max="168" placeholder="Global"
-                    value={hoursBefore}
-                    onChange={e => setHoursBefore(e.target.value)}
-                    className="w-full bg-[#0f172a] border border-[#1f2937] focus:border-[#34D399]/50 rounded-lg px-3 py-2 text-white text-sm outline-none transition-colors placeholder-[#374151]"
-                  />
+                  <p className="text-xs text-[#34D399]/60 tracking-widest uppercase mb-1">Ventana de uso del QR</p>
+                  <p className="text-[#6b7280] text-xs mb-3">Dejá vacío para usar la configuración global.</p>
+                  <div className="grid grid-cols-2 gap-3 mb-3">
+                    <div>
+                      <label className="block text-[10px] tracking-widest uppercase text-[#6b7280] mb-1">Horas antes</label>
+                      <input
+                        type="number" min="0" max="168" placeholder="Global"
+                        value={hoursBefore}
+                        onChange={e => setHoursBefore(e.target.value)}
+                        className="w-full bg-[#0f172a] border border-[#1f2937] focus:border-[#34D399]/50 rounded-lg px-3 py-2 text-white text-sm outline-none transition-colors placeholder-[#374151]"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] tracking-widest uppercase text-[#6b7280] mb-1">Horas después</label>
+                      <input
+                        type="number" min="0" max="168" placeholder="Global"
+                        value={hoursAfter}
+                        onChange={e => setHoursAfter(e.target.value)}
+                        className="w-full bg-[#0f172a] border border-[#1f2937] focus:border-[#34D399]/50 rounded-lg px-3 py-2 text-white text-sm outline-none transition-colors placeholder-[#374151]"
+                      />
+                    </div>
+                  </div>
+                  <button onClick={saveUploadHours} disabled={savingHours} className="text-xs btn-gold px-4 py-1.5 rounded-lg disabled:opacity-40">
+                    {savingHours ? 'Guardando...' : 'Guardar'}
+                  </button>
                 </div>
-                <div>
-                  <label className="block text-[10px] tracking-widest uppercase text-[#6b7280] mb-1">Horas después</label>
-                  <input
-                    type="number" min="0" max="168" placeholder="Global"
-                    value={hoursAfter}
-                    onChange={e => setHoursAfter(e.target.value)}
-                    className="w-full bg-[#0f172a] border border-[#1f2937] focus:border-[#34D399]/50 rounded-lg px-3 py-2 text-white text-sm outline-none transition-colors placeholder-[#374151]"
-                  />
-                </div>
-              </div>
-              <button onClick={saveUploadHours} disabled={savingHours} className="text-xs btn-gold px-4 py-1.5 rounded-lg disabled:opacity-40">
-                {savingHours ? 'Guardando...' : 'Guardar'}
-              </button>
-            </div>
+              </>
+            )}
 
             <div className="divider-gold opacity-30" />
             <div className="flex items-center justify-between">

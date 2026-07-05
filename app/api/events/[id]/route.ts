@@ -54,8 +54,8 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         ...(admin.isSuperAdmin && clientId !== undefined && { clientId: clientId || null }),
         ...(nsfwFilter !== undefined && { nsfwFilter }),
         ...(uploadsPaused !== undefined && { uploadsPaused }),
-        ...('uploadHoursBefore' in body && { uploadHoursBefore: uploadHoursBefore === null ? null : Number(uploadHoursBefore) }),
-        ...('uploadHoursAfter'  in body && { uploadHoursAfter:  uploadHoursAfter  === null ? null : Number(uploadHoursAfter) }),
+        ...(admin.isSuperAdmin && 'uploadHoursBefore' in body && { uploadHoursBefore: uploadHoursBefore === null ? null : Number(uploadHoursBefore) }),
+        ...(admin.isSuperAdmin && 'uploadHoursAfter'  in body && { uploadHoursAfter:  uploadHoursAfter  === null ? null : Number(uploadHoursAfter) }),
       },
     })
 
