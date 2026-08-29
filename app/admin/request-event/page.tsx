@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
+import { useEventPrice, formatPrice } from '@/lib/useEventPrice'
 
 export default function RequestEventPage() {
   const router = useRouter()
@@ -11,6 +12,7 @@ export default function RequestEventPage() {
   const [form, setForm] = useState({ eventName: '', eventDate: '' })
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
+  const price = useEventPrice()
 
   useEffect(() => {
     fetch('/api/auth/me').then(async res => {
@@ -126,7 +128,9 @@ export default function RequestEventPage() {
               <p className="text-[#6b7280] text-xs mt-0.5">Cargo único por evento · Pago seguro vía Mercado Pago</p>
             </div>
             <div className="text-right">
-              <p className="text-[#34D399] text-2xl font-bold" style={{ fontFamily: 'var(--font-space-grotesk)' }}>$1</p>
+              <p className="text-[#34D399] text-2xl font-bold" style={{ fontFamily: 'var(--font-space-grotesk)' }}>
+                {price !== null ? `$${formatPrice(price)}` : '...'}
+              </p>
               <p className="text-[#6b7280] text-xs">ARS</p>
             </div>
           </div>

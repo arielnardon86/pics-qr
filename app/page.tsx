@@ -4,11 +4,29 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { QrCode, CloudUpload, Monitor, Heart } from 'lucide-react'
+import { QrCode, CloudUpload, Monitor, Heart, UserPlus, CalendarPlus, Share2, Images } from 'lucide-react'
+import { useEventPrice, formatPrice } from '@/lib/useEventPrice'
+
+const GUEST_STEPS = [
+  { icon: QrCode,      title: 'Escaneá el QR',       desc: 'Ingresá desde tu celular escaneando el código del evento.' },
+  { icon: CloudUpload, title: 'Subí tu foto',         desc: 'Elegí tu mejor foto y subila al álbum del evento.' },
+  { icon: Monitor,     title: 'Se muestra en vivo',   desc: 'Tus fotos se ven en la pantalla durante todo el evento.' },
+  { icon: Heart,       title: 'Reviví los recuerdos', desc: 'Todas las fotos quedan guardadas para compartir después.' },
+]
+
+const ORGANIZER_STEPS = [
+  { icon: UserPlus,     title: 'Te registrás',     desc: 'Creá tu cuenta de organizador gratis, en un minuto.' },
+  { icon: CalendarPlus, title: 'Creás tu evento',  desc: 'Cargá nombre y fecha, y pagá el cargo único del evento.' },
+  { icon: Share2,       title: 'Compartís el QR',  desc: 'Imprimilo o mostralo en pantalla para que escaneen tus invitados.' },
+  { icon: Images,       title: 'Recibís las fotos', desc: 'Se proyectan en vivo y quedan guardadas para vos al terminar.' },
+]
 
 export default function Home() {
   const router = useRouter()
   const [code, setCode] = useState('')
+  const [audience, setAudience] = useState<'invitados' | 'organizadores'>('invitados')
+  const steps = audience === 'invitados' ? GUEST_STEPS : ORGANIZER_STEPS
+  const price = useEventPrice()
 
   function handleScan(e: React.FormEvent) {
     e.preventDefault()
@@ -91,17 +109,31 @@ export default function Home() {
           <h2 className="text-center text-xs tracking-[0.4em] uppercase text-[#34D399]/70 mb-2 font-semibold" style={{ fontFamily: 'var(--font-exo2)' }}>
             Cómo funciona
           </h2>
-          <p className="text-center text-2xl sm:text-3xl font-black uppercase text-white mb-10" style={{ fontFamily: 'var(--font-exo2)' }}>
+          <p className="text-center text-2xl sm:text-3xl font-black uppercase text-white mb-8" style={{ fontFamily: 'var(--font-exo2)' }}>
             ¿CÓMO FUNCIONA?
           </p>
 
+          <div className="flex justify-center mb-10">
+            <div className="inline-flex p-1 rounded-xl bg-[#111827] border border-[#1f2937]">
+              {([
+                { key: 'invitados', label: 'Soy invitado' },
+                { key: 'organizadores', label: 'Soy organizador' },
+              ] as const).map(tab => (
+                <button
+                  key={tab.key}
+                  onClick={() => setAudience(tab.key)}
+                  className={`px-5 py-2 rounded-lg text-xs tracking-widest uppercase font-bold transition-colors ${
+                    audience === tab.key ? 'btn-gold' : 'text-[#9ca3af] hover:text-white'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            {[
-              { icon: QrCode,      title: 'Escaneá el QR',       desc: 'Ingresá desde tu celular escaneando el código del evento.' },
-              { icon: CloudUpload, title: 'Subí tu foto',         desc: 'Elegí tu mejor foto y subila al álbum del evento.' },
-              { icon: Monitor,     title: 'Se muestra en vivo',   desc: 'Tus fotos se ven en la pantalla durante todo el evento.' },
-              { icon: Heart,       title: 'Reviví los recuerdos', desc: 'Todas las fotos quedan guardadas para compartir después.' },
-            ].map(step => (
+            {steps.map(step => (
               <div key={step.title} className="card-dark p-6 space-y-3 hover:border-[#34D399]/25 transition-colors text-center">
                 <div className="w-12 h-12 rounded-xl bg-[#34D399]/10 border border-[#34D399]/20 flex items-center justify-center mx-auto">
                   <step.icon size={22} className="text-[#34D399]" strokeWidth={1.5} />
@@ -111,6 +143,24 @@ export default function Home() {
               </div>
             ))}
           </div>
+
+          {audience === 'organizadores' && (
+            <div className="mt-8 max-w-md mx-auto card-dark p-5 flex items-center justify-between">
+              <div>
+                <p className="text-white text-sm font-semibold">Costo del servicio</p>
+                <p className="text-[#6b7280] text-xs mt-0.5">Cargo único por evento</p>
+              </div>
+              <div className="text-right">
+                {price !== null ? (
+                  <p className="text-[#34D399] text-2xl font-bold" style={{ fontFamily: 'var(--font-exo2)' }}>
+                    ${formatPrice(price)} <span className="text-xs text-[#6b7280] font-normal">ARS</span>
+                  </p>
+                ) : (
+                  <p className="text-[#6b7280] text-xs">Cargando...</p>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </section>
 
