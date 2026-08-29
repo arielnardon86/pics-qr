@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useEventPrice, formatPrice } from '@/lib/useEventPrice'
+import MercadoPagoIcon from '@/app/components/MercadoPagoIcon'
 
 export default function RequestEventPage() {
   const router = useRouter()
@@ -125,7 +126,10 @@ export default function RequestEventPage() {
           <div className="card-dark p-5 flex items-center justify-between">
             <div>
               <p className="text-white text-sm font-semibold">Creación de evento</p>
-              <p className="text-[#6b7280] text-xs mt-0.5">Cargo único por evento · Pago seguro vía Mercado Pago</p>
+              <p className="flex items-center gap-1.5 text-[#6b7280] text-xs mt-0.5">
+                <MercadoPagoIcon size={13} />
+                Cargo único por evento · Pago seguro vía Mercado Pago
+              </p>
             </div>
             <div className="text-right">
               <p className="text-[#34D399] text-2xl font-bold" style={{ fontFamily: 'var(--font-space-grotesk)' }}>

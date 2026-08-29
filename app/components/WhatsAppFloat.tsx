@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { X, UserPlus, CalendarPlus, QrCode } from 'lucide-react'
 import { useEventPrice, formatPrice } from '@/lib/useEventPrice'
+import MercadoPagoIcon from './MercadoPagoIcon'
 
 const WHATSAPP_NUMBER = '5491141903897'
 const DEFAULT_MESSAGE = 'Hola! Quiero info sobre Total Pics para mi evento 🙌'
@@ -76,6 +77,11 @@ export default function WhatsAppFloat() {
               )}
             </div>
           </div>
+
+          <p className="flex items-center gap-1.5 text-[#6b7280] text-[11px] mb-4">
+            <MercadoPagoIcon size={14} />
+            Pago seguro a través de un link de pago de Mercado Pago
+          </p>
 
           <a
             href={waHref}

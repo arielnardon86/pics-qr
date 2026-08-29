@@ -6,6 +6,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { QrCode, CloudUpload, Monitor, Heart, UserPlus, CalendarPlus, Share2, Images } from 'lucide-react'
 import { useEventPrice, formatPrice } from '@/lib/useEventPrice'
+import MercadoPagoIcon from './components/MercadoPagoIcon'
 
 const GUEST_STEPS = [
   { icon: QrCode,      title: 'Escaneá el QR',       desc: 'Ingresá desde tu celular escaneando el código del evento.' },
@@ -148,7 +149,10 @@ export default function Home() {
             <div className="mt-8 max-w-md mx-auto card-dark p-5 flex items-center justify-between">
               <div>
                 <p className="text-white text-sm font-semibold">Costo del servicio</p>
-                <p className="text-[#6b7280] text-xs mt-0.5">Cargo único por evento</p>
+                <p className="flex items-center gap-1.5 text-[#6b7280] text-xs mt-0.5">
+                  <MercadoPagoIcon size={13} />
+                  Cargo único por evento · pago vía link de Mercado Pago
+                </p>
               </div>
               <div className="text-right">
                 {price !== null ? (
