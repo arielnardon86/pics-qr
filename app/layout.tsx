@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Inter, Exo_2 } from 'next/font/google'
 import './globals.css'
+import WhatsAppFloat from './components/WhatsAppFloat'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 
@@ -23,6 +24,7 @@ export default function RootLayout({
     <html lang="es" className={`h-full ${inter.variable} ${exo2.variable}`}>
       <body className="min-h-full bg-[#09090b] text-white">
         {children}
+        <WhatsAppFloat />
       </body>
     </html>
   )
