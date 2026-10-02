@@ -10,4 +10,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Ping health endpoint
-        run: curl -sf --max-time 20 https://totalpics.com.ar/api/health
+        # Render free cold starts can take ~60s, and GitHub often delays scheduled
+        # runs past the 15-min sleep window, so allow a long timeout plus retries.
+        run: curl -sf --max-time 120 --retry 3 --retry-delay 10 --retry-all-errors https://totalpics.com.ar/api/health
