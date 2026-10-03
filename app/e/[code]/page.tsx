@@ -44,6 +44,38 @@ async function isImageSafe(file: File): Promise<boolean> {
   }
 }
 
+const MAX_DIMENSION = 2048
+const JPEG_QUALITY = 0.85
+
+// Downscale to JPEG before upload: phone originals (3–10 MB) are buffered in server
+// memory, and the Render instance only has 512 MB. Falls back to the original file.
+async function compressImage(file: File): Promise<File> {
+  if (file.type === 'image/gif') return file // keep animation
+  const url = URL.createObjectURL(file)
+  try {
+    const img = document.createElement('img')
+    img.src = url
+    await img.decode()
+    const scale = Math.min(1, MAX_DIMENSION / Math.max(img.naturalWidth, img.naturalHeight))
+    const canvas = document.createElement('canvas')
+    canvas.width = Math.round(img.naturalWidth * scale)
+    canvas.height = Math.round(img.naturalHeight * scale)
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return file
+    ctx.fillStyle = '#fff' // JPEG has no alpha; avoid black behind transparent PNGs
+    ctx.fillRect(0, 0, canvas.width, canvas.height)
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
+    const blob = await new Promise<Blob | null>(r => canvas.toBlob(r, 'image/jpeg', JPEG_QUALITY))
+    if (!blob || blob.size >= file.size) return file
+    const name = file.name.replace(/\.[^.]+$/, '') + '.jpg'
+    return new File([blob], name, { type: 'image/jpeg' })
+  } catch {
+    return file
+  } finally {
+    URL.revokeObjectURL(url)
+  }
+}
+
 export default function GuestPage({ params }: { params: Promise<{ code: string }> }) {
   const { code } = use(params)
   const [event, setEvent] = useState<EventData | null>(null)
@@ -114,7 +146,8 @@ export default function GuestPage({ params }: { params: Promise<{ code: string }
     setUploading(true); setError('')
     try {
       const formData = new FormData()
-      selectedFiles.forEach(file => formData.append('photos', file))
+      const compressed = await Promise.all(selectedFiles.map(compressImage))
+      compressed.forEach(file => formData.append('photos', file))
       if (uploaderName.trim()) formData.append('uploadedBy', uploaderName.trim())
       const res = await fetch(`/api/events/${event.id}/photos`, { method: 'POST', body: formData })
       if (!res.ok) {
