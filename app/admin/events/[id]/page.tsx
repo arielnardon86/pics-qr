@@ -4,6 +4,8 @@ import { useEffect, useState, use } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
+import { Trash2 } from 'lucide-react'
+import { getSocket } from '@/lib/socket-client'
 import { Suspense } from 'react'
 
 interface Photo {
@@ -131,7 +133,10 @@ function EventPageContent({ id }: { id: string }) {
   async function deletePhoto(photoId: string) {
     const res = await fetch(`/api/events/${id}/photos/${photoId}`, { method: 'DELETE' })
     // Don't touch _count.photos — the file still lives in Google Drive
-    if (res.ok) setEvent(e => e ? { ...e, photos: e.photos.filter(p => p.id !== photoId) } : e)
+    if (res.ok) {
+      setEvent(e => e ? { ...e, photos: e.photos.filter(p => p.id !== photoId) } : e)
+      getSocket().emit('remove-photo', { eventId: id, photoId })
+    }
   }
 
   async function copyLink() {
@@ -466,9 +471,11 @@ function EventPageContent({ id }: { id: string }) {
                   </a>
                   <button
                     onClick={() => { if (confirm('¿Eliminar esta foto?')) deletePhoto(photo.id) }}
-                    className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-[#080808]/80 border border-red-900/40 text-red-400 hover:bg-red-900/60 hover:text-white text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all z-10"
+                    // Always visible on touch screens (no hover); hover-revealed on desktop
+                    className="absolute top-1.5 right-1.5 w-8 h-8 sm:w-7 sm:h-7 rounded-full bg-[#080808]/80 border border-red-900/40 text-red-400 hover:bg-red-900/60 hover:text-white flex items-center justify-center opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 focus-visible:opacity-100 transition-all z-10"
                     title="Eliminar foto"
-                  >✕</button>
+                    aria-label="Eliminar foto"
+                  ><Trash2 className="w-4 h-4 sm:w-3.5 sm:h-3.5" /></button>
                 </div>
               ))}
             </div>

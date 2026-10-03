@@ -27,6 +27,11 @@ export default function SlideshowPage({ params }: { params: Promise<{ id: string
   const [showControls, setShowControls] = useState(true)
   const [cycleComplete, setCycleComplete] = useState(false)
   const cycleCompleteRef = useRef(false)
+  const photosRef = useRef<Photo[]>([])
+
+  useEffect(() => {
+    photosRef.current = photos
+  }, [photos])
 
   useEffect(() => {
     cycleCompleteRef.current = cycleComplete
@@ -86,7 +91,15 @@ export default function SlideshowPage({ params }: { params: Promise<{ id: string
       setNewPhotoFlash(true)
       setTimeout(() => setNewPhotoFlash(false), 2000)
     })
-    return () => { socket.off('photo-added') }
+    socket.on('photo-removed', (photoId: string) => {
+      const prev = photosRef.current
+      const idx = prev.findIndex(p => p.id === photoId)
+      if (idx === -1) return
+      setPhotos(prev.filter(p => p.id !== photoId))
+      // Keep showing the same photo if an earlier one was removed; clamp to the new end
+      setCurrentIndex(ci => Math.max(0, Math.min(idx < ci ? ci - 1 : ci, prev.length - 2)))
+    })
+    return () => { socket.off('photo-added'); socket.off('photo-removed') }
   }, [id])
 
   // Advance one step — stops at last photo instead of looping

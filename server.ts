@@ -28,6 +28,11 @@ app.prepare().then(async () => {
       io.to(`event-${data.eventId}`).emit('photo-added', data.photo)
     })
 
+    // Photo deleted by admin — remove it from open slideshows
+    socket.on('remove-photo', (data: { eventId: string; photoId: string }) => {
+      io.to(`event-${data.eventId}`).emit('photo-removed', data.photoId)
+    })
+
     // Slideshow control events
     socket.on('slideshow-control', (data: { eventId: string; action: string }) => {
       socket.to(`event-${data.eventId}`).emit('slideshow-control', data)
