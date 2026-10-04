@@ -81,7 +81,10 @@ export default function SlideshowPage({ params }: { params: Promise<{ id: string
 
   useEffect(() => {
     const socket = getSocket()
-    socket.emit('join-event', id)
+    // Rooms are dropped on disconnect, so rejoin after every (re)connect
+    const join = () => socket.emit('join-event', id)
+    join()
+    socket.on('connect', join)
     socket.on('photo-added', (photo: Photo) => {
       setPhotos(prev => [...prev, photo])
       // If cycle was done, resume to show new photos
@@ -99,7 +102,10 @@ export default function SlideshowPage({ params }: { params: Promise<{ id: string
       // Keep showing the same photo if an earlier one was removed; clamp to the new end
       setCurrentIndex(ci => Math.max(0, Math.min(idx < ci ? ci - 1 : ci, prev.length - 2)))
     })
-    return () => { socket.off('photo-added'); socket.off('photo-removed') }
+    socket.on('event-updated', (data: { slideshowInterval: number }) => {
+      setEvent(e => e ? { ...e, slideshowInterval: data.slideshowInterval } : e)
+    })
+    return () => { socket.off('photo-added'); socket.off('photo-removed'); socket.off('event-updated'); socket.off('connect', join) }
   }, [id])
 
   // Advance one step — stops at last photo instead of looping

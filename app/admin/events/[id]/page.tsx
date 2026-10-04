@@ -92,6 +92,7 @@ function EventPageContent({ id }: { id: string }) {
     })
     setSaving(false)
     if (event) setEvent({ ...event, slideshowInterval: slideInterval })
+    getSocket().emit('update-event', { eventId: id, slideshowInterval: slideInterval })
   }
 
   async function saveUploadHours() {

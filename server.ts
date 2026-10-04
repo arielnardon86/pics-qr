@@ -33,7 +33,12 @@ app.prepare().then(async () => {
       io.to(`event-${data.eventId}`).emit('photo-removed', data.photoId)
     })
 
-    // Slideshow control events
+    // Event settings changed by admin — push to open slideshows
+    socket.on('update-event', (data: { eventId: string; slideshowInterval: number }) => {
+      io.to(`event-${data.eventId}`).emit('event-updated', data)
+    })
+
+        // Slideshow control events
     socket.on('slideshow-control', (data: { eventId: string; action: string }) => {
       socket.to(`event-${data.eventId}`).emit('slideshow-control', data)
     })

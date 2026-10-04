@@ -44,6 +44,7 @@ async function isImageSafe(file: File): Promise<boolean> {
   }
 }
 
+const MAX_PHOTO_AGE_MS = 10 * 60 * 1000
 const MAX_DIMENSION = 2048
 const JPEG_QUALITY = 0.85
 
@@ -114,6 +115,14 @@ export default function GuestPage({ params }: { params: Promise<{ code: string }
     if (files.length === 0) return
     const file = files[0]
     setError('')
+
+    // Camera-only uploads: a freshly captured photo has lastModified ≈ now, while
+    // gallery picks (memes, old photos) are older. Skip when the browser reports 0.
+    if (file.lastModified && Date.now() - file.lastModified > MAX_PHOTO_AGE_MS) {
+      if (fileInputRef.current) fileInputRef.current.value = ''
+      setError('Solo se pueden subir fotos sacadas en el momento con la cámara.')
+      return
+    }
 
     // Show preview immediately
     setSelectedFiles([file])
@@ -338,14 +347,14 @@ export default function GuestPage({ params }: { params: Promise<{ code: string }
         </div>
 
         <div>
-          <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileSelect} className="hidden" id="file-input" />
+          <input ref={fileInputRef} type="file" accept="image/*" capture="environment" onChange={handleFileSelect} className="hidden" id="file-input" />
           <label
             htmlFor="file-input"
             className="flex flex-col items-center justify-center border-2 border-dashed border-[#1f2937] hover:border-[#34D399]/50 rounded-2xl p-6 cursor-pointer transition-colors hover:bg-[#34D399]/5 group"
           >
             <span className="text-gold text-2xl mb-2 group-hover:scale-110 transition-transform" style={{ fontFamily: 'var(--font-space-grotesk)' }}>✦</span>
-            <p className="text-white text-sm font-medium tracking-wide" style={{ fontFamily: 'var(--font-space-grotesk)' }}>Seleccionar foto</p>
-            <p className="text-[#6b7280] text-xs mt-1">Una foto por vez</p>
+            <p className="text-white text-sm font-medium tracking-wide" style={{ fontFamily: 'var(--font-space-grotesk)' }}>Sacar foto</p>
+            <p className="text-[#6b7280] text-xs mt-1">Se abre la cámara · una foto por vez</p>
           </label>
         </div>
 
