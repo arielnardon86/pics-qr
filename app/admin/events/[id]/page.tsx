@@ -459,7 +459,7 @@ function EventPageContent({ id }: { id: string }) {
                 <div key={photo.id} className="relative aspect-square rounded-xl overflow-hidden bg-[#111] group border border-[#1f2937]">
                   <a href={photo.driveFileUrl || '#'} target="_blank" rel="noopener noreferrer" className="block w-full h-full">
                     <Image
-                      src={photo.path} alt={photo.filename} fill
+                      src={photo.path} alt={photo.filename} fill unoptimized
                       className="object-cover transition-transform duration-500 group-hover:scale-105"
                       sizes="(max-width: 640px) 50vw, 20vw"
                     />

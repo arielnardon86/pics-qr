@@ -14,6 +14,12 @@ interface EventData {
 }
 interface QRData { qr: string; url: string; code: string }
 
+// Drive thumbnails are stored at 800px; request a size that fills a TV/projector.
+// Loaded straight from Google (not via the Next image optimizer on our small server).
+function slideUrl(path: string): string {
+  return path.replace(/([?&]sz=)w\d+/, '$1w1920')
+}
+
 // Remember the newest photo already shown (by createdAt) so a reload, deploy or
 // reconnect resumes with unseen photos instead of replaying the whole event.
 const lastShownKey = (eventId: string) => `slideshow:${eventId}:lastShown`
@@ -42,6 +48,8 @@ export default function SlideshowPage({ params }: { params: Promise<{ id: string
   const cycleCompleteRef = useRef(false)
   const photosRef = useRef<Photo[]>([])
   const loadedRef = useRef(false)
+  // Photo fully loaded on screen; kept visible until the next one finishes loading
+  const [shownId, setShownId] = useState<string | null>(null)
 
   useEffect(() => {
     photosRef.current = photos
@@ -159,6 +167,12 @@ export default function SlideshowPage({ params }: { params: Promise<{ id: string
     if (photo && !cycleComplete && !loading) writeLastShown(id, photo.createdAt)
   }, [id, photos, currentIndex, cycleComplete, loading])
 
+  // Preload the next photo so the transition doesn't wait on the network
+  useEffect(() => {
+    const next = photos[currentIndex + 1]
+    if (next) new window.Image().src = slideUrl(next.path)
+  }, [photos, currentIndex])
+
   // Advance one step — stops at last photo instead of looping
   const advance = useCallback((total: number) => {
     setCurrentIndex(prev => {
@@ -249,21 +263,31 @@ export default function SlideshowPage({ params }: { params: Promise<{ id: string
   }
 
   const currentPhoto = photos[currentIndex]
+  const shownPhoto = photos.find(p => p.id === shownId)
 
   return (
     <div className="min-h-screen bg-[#080808] relative overflow-hidden select-none">
 
       {/* Photo */}
       <div className="absolute inset-0">
-        <Image
+        {/* eslint-disable @next/next/no-img-element */}
+        {shownPhoto && shownPhoto.id !== currentPhoto.id && (
+          <img
+            key={shownPhoto.id}
+            src={slideUrl(shownPhoto.path)}
+            alt=""
+            className="absolute inset-0 w-full h-full object-contain"
+          />
+        )}
+        <img
           key={currentPhoto.id}
-          src={currentPhoto.path}
+          src={slideUrl(currentPhoto.path)}
           alt={currentPhoto.filename}
-          fill
-          className="object-contain"
-          priority
-          sizes="100vw"
+          onLoad={() => setShownId(currentPhoto.id)}
+          onError={() => setShownId(currentPhoto.id)}
+          className={`absolute inset-0 w-full h-full object-contain transition-opacity duration-500 ${shownId === currentPhoto.id ? 'opacity-100' : 'opacity-0'}`}
         />
+        {/* eslint-enable @next/next/no-img-element */}
       </div>
 
       {/* Client/admin logo watermark */}
