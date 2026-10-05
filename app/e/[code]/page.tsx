@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef, use } from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 import { getSocket } from '@/lib/socket-client'
 
 interface EventData {
@@ -225,7 +226,7 @@ export default function GuestPage({ params }: { params: Promise<{ code: string }
       <div className="min-h-screen bg-[#080808] flex flex-col items-center justify-center p-6 relative overflow-hidden">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[400px] h-[300px] bg-amber-400/5 blur-[120px] pointer-events-none" />
         <div className="relative z-10 flex flex-col items-center gap-2 mb-8">
-          <Image src="/logo.png" alt="Total Pics" width={48} height={48} unoptimized className="drop-shadow-[0_0_12px_rgba(52,211,153,0.3)]" />
+          <Link href="/" aria-label="Ir a Total Pics" className="inline-block"><Image src="/logo.png" alt="Total Pics" width={48} height={48} unoptimized className="drop-shadow-[0_0_12px_rgba(52,211,153,0.3)]" /></Link>
           <p className="text-sm font-black tracking-widest uppercase text-white" style={{ fontFamily: 'var(--font-exo2)' }}>TOTAL <span className="text-[#34D399]">PICS</span></p>
         </div>
         <div className="relative z-10 card-dark p-8 w-full max-w-sm text-center space-y-5" style={{ borderColor: '#92400e33' }}>
@@ -254,7 +255,7 @@ export default function GuestPage({ params }: { params: Promise<{ code: string }
       <div className="min-h-screen bg-[#080808] flex flex-col items-center justify-center p-6 relative overflow-hidden">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[400px] h-[300px] bg-[#34D399]/5 blur-[120px] pointer-events-none" />
         <div className="relative z-10 flex flex-col items-center gap-2 mb-8">
-          <Image src="/logo.png" alt="Total Pics" width={48} height={48} unoptimized className="drop-shadow-[0_0_12px_rgba(52,211,153,0.3)]" />
+          <Link href="/" aria-label="Ir a Total Pics" className="inline-block"><Image src="/logo.png" alt="Total Pics" width={48} height={48} unoptimized className="drop-shadow-[0_0_12px_rgba(52,211,153,0.3)]" /></Link>
           <p className="text-sm font-black tracking-widest uppercase text-white" style={{ fontFamily: 'var(--font-exo2)' }}>TOTAL <span className="text-[#34D399]">PICS</span></p>
         </div>
         <div className="relative z-10 card-dark p-8 w-full max-w-sm glow-gold text-center space-y-5">
@@ -282,7 +283,7 @@ export default function GuestPage({ params }: { params: Promise<{ code: string }
       <div className="min-h-screen bg-[#080808] flex flex-col items-center justify-center p-6 relative overflow-hidden">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[400px] h-[300px] bg-[#34D399]/5 blur-[120px] pointer-events-none" />
         <div className="relative z-10 flex flex-col items-center gap-2 mb-8">
-          <Image src="/logo.png" alt="Total Pics" width={48} height={48} unoptimized className="drop-shadow-[0_0_12px_rgba(52,211,153,0.3)]" />
+          <Link href="/" aria-label="Ir a Total Pics" className="inline-block"><Image src="/logo.png" alt="Total Pics" width={48} height={48} unoptimized className="drop-shadow-[0_0_12px_rgba(52,211,153,0.3)]" /></Link>
           <p className="text-sm font-black tracking-widest uppercase text-white" style={{ fontFamily: 'var(--font-exo2)' }}>TOTAL <span className="text-[#34D399]">PICS</span></p>
         </div>
         <div className="relative z-10 card-dark p-8 w-full max-w-sm glow-gold text-center space-y-5">
@@ -320,7 +321,7 @@ export default function GuestPage({ params }: { params: Promise<{ code: string }
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[400px] h-[300px] bg-[#34D399]/5 blur-[120px] pointer-events-none" />
 
       <div className="relative z-10 flex flex-col items-center gap-2 mb-8">
-        <Image src="/logo.png" alt="Total Pics" width={52} height={52} unoptimized className="drop-shadow-[0_0_12px_rgba(52,211,153,0.3)]" />
+        <Link href="/" aria-label="Ir a Total Pics" className="inline-block"><Image src="/logo.png" alt="Total Pics" width={52} height={52} unoptimized className="drop-shadow-[0_0_12px_rgba(52,211,153,0.3)]" /></Link>
         <p className="text-base font-black tracking-widest uppercase text-white" style={{ fontFamily: 'var(--font-exo2)' }}>
           TOTAL <span className="text-[#34D399]">PICS</span>
         </p>

@@ -14,6 +14,19 @@ interface EventData {
 }
 interface QRData { qr: string; url: string; code: string }
 
+// Remember the newest photo already shown (by createdAt) so a reload, deploy or
+// reconnect resumes with unseen photos instead of replaying the whole event.
+const lastShownKey = (eventId: string) => `slideshow:${eventId}:lastShown`
+function readLastShown(eventId: string): string | null {
+  try { return localStorage.getItem(lastShownKey(eventId)) } catch { return null }
+}
+function writeLastShown(eventId: string, createdAt: string) {
+  try {
+    const prev = localStorage.getItem(lastShownKey(eventId))
+    if (!prev || createdAt > prev) localStorage.setItem(lastShownKey(eventId), createdAt)
+  } catch {}
+}
+
 export default function SlideshowPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
   const [photos, setPhotos] = useState<Photo[]>([])
@@ -28,6 +41,7 @@ export default function SlideshowPage({ params }: { params: Promise<{ id: string
   const [cycleComplete, setCycleComplete] = useState(false)
   const cycleCompleteRef = useRef(false)
   const photosRef = useRef<Photo[]>([])
+  const loadedRef = useRef(false)
 
   useEffect(() => {
     photosRef.current = photos
@@ -54,8 +68,22 @@ export default function SlideshowPage({ params }: { params: Promise<{ id: string
           client: data.event.client ?? null,
         })
       }
-      if (photosRes.ok) setPhotos((await photosRes.json()).photos)
+      if (photosRes.ok) {
+        const list: Photo[] = (await photosRes.json()).photos
+        photosRef.current = list
+        setPhotos(list)
+        const lastShown = readLastShown(id)
+        const next = lastShown ? list.findIndex(p => p.createdAt > lastShown) : 0
+        if (next === -1) {
+          // Everything was already shown: go straight to the QR invite screen
+          setCurrentIndex(Math.max(0, list.length - 1))
+          setCycleComplete(list.length > 0)
+        } else {
+          setCurrentIndex(next)
+        }
+      }
       if (qrRes.ok) setQrData(await qrRes.json())
+      loadedRef.current = true
       setLoading(false)
     }
     load()
@@ -82,31 +110,54 @@ export default function SlideshowPage({ params }: { params: Promise<{ id: string
   useEffect(() => {
     const socket = getSocket()
     // Rooms are dropped on disconnect, so rejoin after every (re)connect
-    const join = () => socket.emit('join-event', id)
-    join()
-    socket.on('connect', join)
-    socket.on('photo-added', (photo: Photo) => {
-      setPhotos(prev => [...prev, photo])
-      // If cycle was done, resume to show new photos
+    function addPhoto(photo: Photo) {
+      if (photosRef.current.some(p => p.id === photo.id)) return
+      const next = [...photosRef.current, photo]
+      photosRef.current = next
+      setPhotos(next)
+      // On the QR screen: jump straight to the new photo, not back to the last old one
       if (cycleCompleteRef.current) {
+        cycleCompleteRef.current = false
+        setCurrentIndex(next.length - 1)
         setCycleComplete(false)
       }
       setNewPhotoFlash(true)
       setTimeout(() => setNewPhotoFlash(false), 2000)
-    })
+    }
+
+    // Photos uploaded while disconnected never reached us — fetch and append them
+    async function resync() {
+      if (!loadedRef.current) return
+      const res = await fetch(`/api/events/${id}/photos`)
+      if (!res.ok) return
+      const list: Photo[] = (await res.json()).photos
+      list.forEach(addPhoto)
+    }
+
+    const join = () => socket.emit('join-event', id)
+    const onConnect = () => { join(); resync() }
+    join()
+    socket.on('connect', onConnect)
+    socket.on('photo-added', addPhoto)
     socket.on('photo-removed', (photoId: string) => {
       const prev = photosRef.current
       const idx = prev.findIndex(p => p.id === photoId)
       if (idx === -1) return
-      setPhotos(prev.filter(p => p.id !== photoId))
+      photosRef.current = prev.filter(p => p.id !== photoId)
+      setPhotos(photosRef.current)
       // Keep showing the same photo if an earlier one was removed; clamp to the new end
       setCurrentIndex(ci => Math.max(0, Math.min(idx < ci ? ci - 1 : ci, prev.length - 2)))
     })
     socket.on('event-updated', (data: { slideshowInterval: number }) => {
       setEvent(e => e ? { ...e, slideshowInterval: data.slideshowInterval } : e)
     })
-    return () => { socket.off('photo-added'); socket.off('photo-removed'); socket.off('event-updated'); socket.off('connect', join) }
+    return () => { socket.off('photo-added'); socket.off('photo-removed'); socket.off('event-updated'); socket.off('connect', onConnect) }
   }, [id])
+
+  useEffect(() => {
+    const photo = photos[currentIndex]
+    if (photo && !cycleComplete && !loading) writeLastShown(id, photo.createdAt)
+  }, [id, photos, currentIndex, cycleComplete, loading])
 
   // Advance one step — stops at last photo instead of looping
   const advance = useCallback((total: number) => {
@@ -120,7 +171,7 @@ export default function SlideshowPage({ params }: { params: Promise<{ id: string
   }, [])
 
   useEffect(() => {
-    if (isPaused || photos.length <= 1 || !event || cycleComplete) return
+    if (isPaused || photos.length === 0 || !event || cycleComplete) return
     const timer = setInterval(() => advance(photos.length), event.slideshowInterval * 1000)
     return () => clearInterval(timer)
   }, [isPaused, photos.length, event, advance, cycleComplete])
@@ -148,28 +199,16 @@ export default function SlideshowPage({ params }: { params: Promise<{ id: string
     )
   }
 
-  if (photos.length === 0) {
-    return (
-      <div className="min-h-screen bg-[#080808] flex flex-col items-center justify-center text-center p-8 space-y-6">
-        <p className="text-7xl text-gold" style={{ fontFamily: 'var(--font-space-grotesk)' }}>{event?.name}</p>
-        <div className="divider-gold w-48 mx-auto" />
-        <p className="text-[#9ca3af] text-lg tracking-wide" style={{ fontFamily: 'var(--font-space-grotesk)', fontStyle: 'italic' }}>
-          Esperando las primeras fotos...
-        </p>
-        <p className="text-[#6b7280] text-sm">Las fotos aparecerán aquí en tiempo real</p>
-      </div>
-    )
-  }
-
-  // ── End screen: all photos shown ──────────────────────────────────────────
-  if (cycleComplete) {
+  // ── QR invite screen: no photos yet, or all photos shown ──────────────────
+  if (photos.length === 0 || cycleComplete) {
+    const waiting = photos.length === 0
     return (
       <div className="min-h-screen bg-[#080808] flex flex-col items-center justify-center text-center p-8 relative overflow-hidden">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] rounded-full bg-[#34D399]/5 blur-[100px] pointer-events-none" />
 
         {logoUrl && (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={logoUrl} alt="Logo" className="h-14 w-auto object-contain mb-8 opacity-80" style={{ filter: 'drop-shadow(0 2px 12px rgba(0,0,0,0.8))' }} />
+          <img src={logoUrl} alt="Logo" className="h-20 md:h-28 max-w-[50vw] w-auto object-contain mb-8 opacity-90" style={{ filter: 'drop-shadow(0 2px 12px rgba(0,0,0,0.8))' }} />
         )}
 
         <p className="text-4xl sm:text-5xl text-gold mb-3" style={{ fontFamily: 'var(--font-space-grotesk)', fontStyle: 'italic' }}>
@@ -193,12 +232,18 @@ export default function SlideshowPage({ params }: { params: Promise<{ id: string
         </p>
         <p className="text-[#6b7280] text-sm tracking-wide">www.totalpics.com.ar</p>
 
+        {waiting ? (
+          <p className="mt-10 text-[#6b7280] text-sm tracking-wide" style={{ fontFamily: 'var(--font-space-grotesk)', fontStyle: 'italic' }}>
+            Esperando las primeras fotos...
+          </p>
+        ) : (
         <button
           onClick={() => { setCycleComplete(false); setCurrentIndex(0) }}
           className="mt-10 border border-[#1f2937] hover:border-[#34D399]/40 text-[#34D399]/60 hover:text-white bg-[#080808]/50 hover:bg-[#34D399]/10 rounded-full px-6 py-2.5 text-xs tracking-widest uppercase transition-all"
         >
           ↺ Ver de nuevo
         </button>
+        )}
       </div>
     )
   }
@@ -227,7 +272,7 @@ export default function SlideshowPage({ params }: { params: Promise<{ id: string
         <img
           src={logoUrl}
           alt="Logo"
-          className="absolute top-5 right-[38%] z-30 h-12 w-auto object-contain opacity-85 pointer-events-none"
+          className="absolute top-5 right-[38%] z-30 h-16 md:h-20 max-w-[25vw] w-auto object-contain opacity-85 pointer-events-none"
           style={{ filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.8))' }}
         />
       )}
